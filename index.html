@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CinePass | Mis Entradas</title>
+    <style>
+        /* --- CSS: DISEÑO PROFESIONAL DARK --- */
+        :root {
+            --bg: #0b0b0d;
+            --card-bg: #1c1c1e;
+            --accent: #ff3b30; /* Rojo vibrante */
+            --text-main: #ffffff;
+            --text-dim: #8e8e93;
+            --glass: rgba(255, 255, 255, 0.1);
+            --radius: 22px;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            width: 100%;
+            max-width: 500px;
+            padding: 40px 25px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        #add-btn {
+            background: var(--text-main);
+            color: black;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 28px;
+            font-weight: 300;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255,255,255,0.15);
+        }
+
+        /* Home / Empty State */
+        #empty-state {
+            margin-top: 120px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 40px;
+        }
+
+        .icon-ticket {
+            font-size: 60px;
+            margin-bottom: 20px;
+            filter: grayscale(1) opacity(0.5);
+        }
+
+        #empty-state p {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            margin: 0;
+        }
+
+        /* Contenedor de Entradas */
+        #ticket-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            perspective: 1500px; /* Crucial para el efecto 3D */
+        }
+
+        /* Tarjeta Logic */
+        .ticket-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .ticket-wrapper.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .ticket-front, .ticket-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        /* Parte Frontal */
+        .ticket-front {
+            background: var(--card-bg);
+        }
+
+        .ticket-front img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .overlay-text {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        /* Parte Trasera */
+        .ticket-back {
+            background: #ffffff;
+            color: #1c1c1e;
+            transform: rotateY(180deg);
+            display: flex;
+            padding: 20px;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .qr-img {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            border: 1px solid #eee;
+            border-radius: 12px;
+        }
+
+        .ticket-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .ticket-info h3 { margin: 0 0 5px 0; font-size: 1.2rem; }
+        .ticket-info p { margin: 2px 0; font-size: 0.9rem; color: #555; }
+        .ticket-info .label { font-size: 0.7rem; text-transform: uppercase; color: var(--accent); font-weight: bold; letter-spacing: 1px; }
+
+        /* Modal / Formulario */
+        #modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(15px);
+            display: none;
+            align-items: flex-end;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #1c1c1e;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            border-radius: 30px 30px 0 0;
+            padding: 30px;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        input {
+            width: 100%;
+            background: #2c2c2e;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .row { display: flex; gap: 10px; }
+
+        label { display: block; margin-bottom: 8px; font-size: 0.8rem; color: var(--text-dim); }
+
+        .btn-save {
+            width: 100%;
+            padding: 18px;
+            background: white;
+            color: black;
+            border: none;
+            border-radius: 16px;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Mis Entradas</h1>
+        <button id="add-btn" onclick="toggleModal(true)">+</button>
+    </header>
+
+    <main id="app">
+        <div id="empty-state">
+            <div class="icon-ticket">🎟️</div>
+            <p>No tienes entradas guardadas</p>
+        </div>
+
+        <div id="ticket-container"></div>
+    </main>
+
+    <div id="modal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="margin:0">Nueva Entrada</h2>
+                <button onclick="toggleModal(false)" style="background:none; border:none; color:white; font-size:24px;">✕</button>
+            </div>
+            
+            <input type="text" id="m-name" placeholder="Película">
+            <input type="text" id="m-cine" placeholder="Cine">
+            <div class="row">
+                <input type="text" id="m-seats" placeholder="Asientos">
+                <input type="number" id="m-hall" placeholder="Sala">
+            </div>
+            
+            <label>Imagen de la Película (Poster)</label>
+            <input type="file" id="m-img" accept="image/*">
+            
+            <label>Foto del Código QR</label>
+            <input type="file" id="m-qr" accept="image/*">
+            
+            <button class="btn-save" onclick="saveTicket()">Guardar en Wallet</button>
+        </div>
+    </div>
+
+    <script>
+        /* --- JS: LÓGICA DE LA APP --- */
+        const modal = document.getElementById('modal');
+        const container = document.getElementById('ticket-container');
+        const emptyState = document.getElementById('empty-state');
+
+        function toggleModal(show) {
+            modal.style.display = show ? 'flex' : 'none';
+        }
+
+        function saveTicket() {
+            const name = document.getElementById('m-name').value;
+            const cine = document.getElementById('m-cine').value;
+            const seats = document.getElementById('m-seats').value;
+            const hall = document.getElementById('m-hall').value;
+            const imgFile = document.getElementById('m-img').files[0];
+            const qrFile = document.getElementById('m-qr').files[0];
+
+            if (!name) return alert("Escribe el nombre de la película");
+
+            // Generar URLs para las imágenes
+            const posterUrl = imgFile ? URL.createObjectURL(imgFile) : 'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2059&auto=format&fit=crop';
+            const qrUrl = qrFile ? URL.createObjectURL(qrFile) : 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=CinePass';
+
+            // Crear elemento de tarjeta
+            const wrapper = document.createElement('div');
+            wrapper.className = 'ticket-wrapper';
+            
+            wrapper.innerHTML = `
+                <div class="ticket-front">
+                    <img src="${posterUrl}" alt="Poster">
+                    <div class="overlay-text">${name}</div>
+                </div>
+                <div class="ticket-back">
+                    <img src="${qrUrl}" class="qr-img" alt="QR">
+                    <div class="ticket-info">
+                        <span class="label">Película</span>
+                        <h3>${name}</h3>
+                        <p>📍 ${cine || 'Cine Local'}</p>
+                        <p>Sala ${hall || '--'} • Asiento ${seats || '--'}</p>
+                    </div>
+                </div>
+            `;
+
+            // Evento de giro
+            wrapper.onclick = () => wrapper.classList.toggle('is-flipped');
+
+            // Agregar y limpiar
+            container.appendChild(wrapper);
+            toggleModal(false);
+            checkEmpty();
+            
+            // Limpiar inputs
+            document.querySelectorAll('input').forEach(i => i.value = '');
+        }
+
+        function checkEmpty() {
+            if (container.children.length > 0) {
+                emptyState.classList.add('hidden');
+            } else {
+                emptyState.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
