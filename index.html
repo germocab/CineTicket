@@ -3,407 +3,344 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0b0b0d">
-    <title>CinePass PWA</title>
-    <link rel="manifest" href="data:application/manifest+json,{'name':'CinePass','short_name':'CinePass','start_url':'.','display':'standalone','background_color':'#0b0b0d','theme_color':'#0b0b0d' }">
+    <meta name="theme-color" content="#000000">
+    <title>CinePass Pro</title>
+    <link rel="manifest" href="data:application/manifest+json,{'name':'CinePass','short_name':'CinePass','start_url':'.','display':'standalone','background_color':'#000000','theme_color':'#000000' }">
     
     <style>
         :root {
-            --bg: #0b0b0d;
+            --bg: #000000;
             --card-bg: #1c1c1e;
             --accent: #ff3b30;
-            --accent-hover: #ff5147;
             --text-main: #ffffff;
             --text-dim: #8e8e93;
-            --radius: 20px;
+            --radius: 24px;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: -apple-system, system-ui, sans-serif; }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
+        body { background-color: var(--bg); color: var(--text-main); margin: 0; overflow-x: hidden; }
 
-        /* --- Header --- */
+        /* --- Pantalla Principal --- */
         header {
-            width: 100%; max-width: 500px;
-            padding: 40px 20px 10px;
+            width: 100%; max-width: 500px; margin: 0 auto;
+            padding: 50px 25px 20px;
             display: flex; justify-content: space-between; align-items: center;
         }
-
-        h1 { font-size: 1.8rem; margin: 0; font-weight: 800; }
-
+        h1 { font-size: 2.2rem; margin: 0; font-weight: 800; letter-spacing: -1px; }
         #add-btn {
-            background: white; border: none; width: 45px; height: 45px;
-            border-radius: 50%; font-size: 24px; font-weight: bold; cursor: pointer;
+            background: white; border: none; width: 44px; height: 44px;
+            border-radius: 50%; font-size: 28px; cursor: pointer;
+        }
+
+        #ticket-container {
+            width: 100%; max-width: 500px; margin: 0 auto; padding: 15px;
+            display: grid; grid-template-columns: 1fr; gap: 20px;
+        }
+
+        .home-card {
+            position: relative; width: 100%; aspect-ratio: 16/9;
+            border-radius: var(--radius); overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: pointer;
             transition: transform 0.2s;
         }
-        #add-btn:active { transform: scale(0.9); }
+        .home-card:active { transform: scale(0.96); }
+        .home-card img { width: 100%; height: 100%; object-fit: cover; }
+        .home-card .label {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 20px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            font-size: 1.4rem; font-weight: 700;
+        }
 
-        /* --- Contenedor Principal --- */
-        #ticket-container {
-            width: 100%; max-width: 500px; padding: 20px;
-            display: flex; flex-direction: column; gap: 25px;
-            perspective: 1200px;
+        /* --- Vista de Detalle (Pantalla Completa) --- */
+        #detail-view {
+            position: fixed; inset: 0; background: var(--bg); z-index: 50;
+            display: none; flex-direction: column; overflow-y: auto;
+            animation: slideIn 0.3s ease-out;
         }
-        #empty-state { margin-top: 100px; text-align: center; color: var(--text-dim); }
+        @keyframes slideIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        /* --- Tarjeta --- */
-        .ticket-wrapper {
-            position: relative; width: 100%; min-height: 200px; aspect-ratio: 16 / 9;
-            transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        .detail-poster {
+            width: 100%; aspect-ratio: 1/1.2; position: relative;
         }
-        .ticket-wrapper.is-flipped { transform: rotateY(180deg); }
-        .ticket-front, .ticket-back {
-            position: absolute; inset: 0; backface-visibility: hidden;
-            border-radius: var(--radius); overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5); background: var(--card-bg); 
+        .detail-poster img { width: 100%; height: 100%; object-fit: cover; }
+        .detail-poster .gradient {
+            position: absolute; inset: 0;
+            background: linear-gradient(to bottom, transparent 60%, var(--bg) 98%);
         }
-        .ticket-front img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.85); }
-        .overlay-text {
-            position: absolute; bottom: 0; left: 0; right: 0; padding: 20px;
-            background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
-            font-weight: 700; font-size: 1.3rem; z-index: 2;
+        .close-detail {
+            position: absolute; top: 50px; left: 20px;
+            background: rgba(0,0,0,0.5); border: none; color: white;
+            width: 40px; height: 40px; border-radius: 50%; font-size: 20px; z-index: 10;
         }
-        .ticket-back { background: #ffffff; color: #000; transform: rotateY(180deg); display: flex; padding: 20px; align-items: center; gap: 15px; }
-        .qr-img { width: 100px; height: 100px; object-fit: contain; cursor: pointer; transition: transform 0.2s; }
-        .qr-img:active { transform: scale(0.95); }
-        .info-grid { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-        .info-grid span { font-size: 0.65rem; text-transform: uppercase; color: var(--accent); font-weight: 800; }
-        .info-grid h3 { margin: 0; font-size: 1.1rem; line-height: 1.2; font-weight: 800;}
-        .info-grid p { margin: 0; font-size: 0.8rem; color: #444; font-weight: 500; }
+
+        .detail-content { padding: 0 25px 50px; margin-top: -60px; position: relative; z-index: 5; }
+        .detail-title { font-size: 2.5rem; font-weight: 900; margin: 0 0 25px; line-height: 1; }
         
-        .delete-btn {
-            position: absolute; top: -10px; right: -10px; background: var(--accent);
-            border: 2px solid var(--bg); color: white; border-radius: 50%; width: 28px; height: 28px;
-            z-index: 20; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;
+        .info-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 30px; }
+        .info-pill {
+            background: var(--card-bg); padding: 12px 18px; border-radius: 16px;
+            display: flex; align-items: center; gap: 10px; font-weight: 600;
         }
+        .info-pill span { color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; display: block; }
 
-        /* --- Modales --- */
+        .detail-actions { display: flex; gap: 10px; margin-bottom: 30px; }
+        .action-btn {
+            flex: 1; padding: 15px; border-radius: 14px; border: none;
+            font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-edit { background: #2c2c2e; color: white; }
+        .btn-delete { background: rgba(255, 59, 48, 0.2); color: #ff3b30; }
+
+        .qr-section {
+            background: white; padding: 30px; border-radius: var(--radius);
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            cursor: pointer; margin-top: 10px;
+        }
+        .qr-section img { width: 180px; height: 180px; }
+        .qr-section p { color: #000; margin: 0; font-weight: 800; font-size: 0.8rem; letter-spacing: 1px; }
+
+        /* --- Modales (Wizard y QR Full) --- */
         .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px);
             display: none; align-items: flex-end; z-index: 100;
         }
         .modal-content {
-            background: var(--card-bg); width: 100%; max-width: 500px;
-            margin: 0 auto; border-radius: 25px 25px 0 0; padding: 25px 25px 35px;
-            display: flex; flex-direction: column;
+            background: var(--card-bg); width: 100%; max-width: 500px; margin: 0 auto;
+            border-radius: 30px 30px 0 0; padding: 30px;
         }
 
-        /* --- Wizard / Pasos --- */
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .modal-header h2 { margin: 0; font-size: 1.3rem; }
-        .close-btn { background: none; border: none; color: var(--text-dim); font-size: 24px; cursor: pointer; }
-        
-        /* Barra de progreso */
-        .progress-container { display: flex; gap: 8px; margin-bottom: 25px; }
-        .progress-dot { flex: 1; height: 4px; background: #3a3a3c; border-radius: 2px; transition: 0.3s; }
-        .progress-dot.active { background: white; }
-
-        .step-container { display: none; flex-direction: column; gap: 15px; animation: fadeIn 0.3s ease; }
+        /* Wizard Steps */
+        .step-container { display: none; flex-direction: column; gap: 15px; }
         .step-container.active { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+        input {
+            width: 100%; background: #2c2c2e; border: none; padding: 18px;
+            border-radius: 14px; color: white; font-size: 1rem;
+        }
+        .file-box {
+            border: 2px dashed #444; padding: 30px; border-radius: 14px; text-align: center; cursor: pointer;
+        }
 
-        /* Inputs y Botones */
-        input[type="text"], input[type="number"] {
-            width: 100%; background: #2c2c2e; border: 1px solid transparent;
-            padding: 16px; border-radius: 14px; color: white; font-size: 1rem; transition: border 0.2s;
+        #qr-full-modal {
+            position: fixed; inset: 0; background: white; z-index: 200;
+            display: none; align-items: center; justify-content: center;
         }
-        input:focus { outline: none; border-color: #555; }
-        
-        .row { display: flex; gap: 10px; }
-        
-        /* Uploaders personalizados */
-        .file-upload-wrapper {
-            background: #2c2c2e; border: 2px dashed #444; border-radius: 14px;
-            padding: 25px; text-align: center; cursor: pointer; transition: 0.2s;
-            position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 8px;
-        }
-        .file-upload-wrapper:active { background: #3a3a3c; }
-        .file-upload-wrapper input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-        .file-icon { font-size: 24px; }
-        .file-text { color: var(--text-dim); font-size: 0.9rem; font-weight: 500; }
-        .file-name { color: white; font-size: 0.8rem; font-weight: 600; background: #1c1c1e; padding: 4px 8px; border-radius: 8px; display: none; }
+        #qr-full-modal img { width: 90vw; max-width: 400px; }
 
-        /* Controles de navegación */
-        .nav-buttons { display: flex; gap: 10px; margin-top: 25px; }
-        .btn { flex: 1; padding: 16px; border-radius: 14px; font-weight: 700; font-size: 1rem; border: none; cursor: pointer; transition: 0.2s; }
-        .btn-secondary { background: #2c2c2e; color: white; }
-        .btn-primary { background: white; color: black; }
-        .btn-success { background: var(--accent); color: white; display: none; }
-        .btn:active { transform: scale(0.98); opacity: 0.9; }
-
-        /* QR Fullscreen */
-        #qr-fullscreen-modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px);
-            display: none; align-items: center; justify-content: center; z-index: 200;
-        }
-        .qr-fullscreen-content {
-            background: white; padding: 30px; border-radius: 20px; display: flex; flex-direction: column; align-items: center;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative;
-        }
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        #qr-large-img { width: 75vw; max-width: 350px; aspect-ratio: 1; object-fit: contain; }
-        .qr-fullscreen-content p { color: black; font-weight: bold; margin-top: 15px; font-size: 0.9rem; text-transform: uppercase;}
-        .close-fullscreen { position: absolute; top: -50px; right: 0; color: white; font-size: 30px; background: none; border: none; cursor: pointer; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Mis Entradas</h1>
+        <h1>CinePass</h1>
         <button id="add-btn" onclick="openWizard()">+</button>
     </header>
 
-    <main id="app" style="width: 100%;">
-        <div id="empty-state">
-            <p style="font-size: 40px; margin-bottom: 10px;">🎟️</p>
-            <p>No tienes entradas activas</p>
+    <main id="ticket-container"></main>
+    <div id="empty-state" style="text-align: center; margin-top: 100px; color: var(--text-dim);">
+        <p>No tienes entradas aún</p>
+    </div>
+
+    <div id="detail-view">
+        <button class="close-detail" onclick="closeDetail()">✕</button>
+        <div class="detail-poster">
+            <img id="det-img" src="" alt="">
+            <div class="gradient"></div>
         </div>
-        <div id="ticket-container"></div>
-    </main>
+        <div class="detail-content">
+            <h2 id="det-title" class="detail-title"></h2>
+            
+            <div class="info-row">
+                <div class="info-pill">
+                    <div><span>📍 Cine</span><div id="det-cine"></div></div>
+                </div>
+                <div class="info-pill">
+                    <div><span>🚪 Sala</span><div id="det-hall"></div></div>
+                </div>
+                <div class="info-pill">
+                    <div><span>👥 Personas</span><div id="det-count"></div></div>
+                </div>
+                <div class="info-pill" style="width: 100%;">
+                    <div><span>💺 Butacas</span><div id="det-seats"></div></div>
+                </div>
+            </div>
+
+            <div class="detail-actions">
+                <button class="action-btn btn-edit" onclick="editTicket()">✏️ Editar</button>
+                <button class="action-btn btn-delete" onclick="handleDelete()">🗑️ Borrar</button>
+            </div>
+
+            <div class="qr-section" onclick="openFullQR()">
+                <img id="det-qr" src="" alt="QR">
+                <p>TOCA PARA AMPLIAR</p>
+            </div>
+        </div>
+    </div>
 
     <div id="wizard-modal" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="step-title">1. Película</h2>
-                <button class="close-btn" onclick="closeWizard()">✕</button>
-            </div>
+            <h3 id="wiz-title" style="margin-top:0">Nueva Entrada</h3>
             
-            <div class="progress-container">
-                <div class="progress-dot active" id="dot-1"></div>
-                <div class="progress-dot" id="dot-2"></div>
-                <div class="progress-dot" id="dot-3"></div>
-            </div>
-
             <div id="step-1" class="step-container active">
-                <input type="text" id="m-name" placeholder="Nombre de la película (Ej: Inception)" autocomplete="off">
-                <div class="file-upload-wrapper">
-                    <span class="file-icon">🖼️</span>
-                    <span class="file-text">Toca para subir póster o foto</span>
-                    <span class="file-name" id="poster-name"></span>
-                    <input type="file" id="m-img" accept="image/*" onchange="updateFileName(this, 'poster-name')">
+                <input type="text" id="m-name" placeholder="Nombre de la película">
+                <div class="file-box" onclick="document.getElementById('m-img').click()">
+                    <span id="p-label">🖼️ Subir Póster</span>
+                    <input type="file" id="m-img" hidden accept="image/*" onchange="labelFile(this, 'p-label')">
                 </div>
+                <button class="action-btn btn-edit" style="background:white; color:black; margin-top:10px" onclick="nextStep(2)">Siguiente</button>
             </div>
 
             <div id="step-2" class="step-container">
-                <input type="text" id="m-cine" placeholder="Cine (Ej: Cinemark, Hoyts)" autocomplete="off">
-                <div class="row">
-                    <input type="number" id="m-count" placeholder="Cant. Personas">
+                <input type="text" id="m-cine" placeholder="Cine">
+                <div style="display:flex; gap:10px">
+                    <input type="number" id="m-count" placeholder="Pers.">
                     <input type="number" id="m-hall" placeholder="Sala">
                 </div>
-                <input type="text" id="m-seats" placeholder="Butacas (Ej: G12, G13)" autocomplete="off">
+                <input type="text" id="m-seats" placeholder="Butacas">
+                <button class="action-btn btn-edit" style="background:white; color:black; margin-top:10px" onclick="nextStep(3)">Siguiente</button>
             </div>
 
             <div id="step-3" class="step-container">
-                <div class="file-upload-wrapper" style="padding: 40px 25px;">
-                    <span class="file-icon">🔳</span>
-                    <span class="file-text">Sube la captura de tu código QR</span>
-                    <span class="file-name" id="qr-name"></span>
-                    <input type="file" id="m-qr" accept="image/*" onchange="updateFileName(this, 'qr-name')">
+                <div class="file-box" onclick="document.getElementById('m-qr').click()">
+                    <span id="q-label">🔳 Subir Código QR</span>
+                    <input type="file" id="m-qr" hidden accept="image/*" onchange="labelFile(this, 'q-label')">
                 </div>
+                <button class="action-btn btn-edit" style="background:var(--accent); color:white; margin-top:10px" onclick="saveTicket()">Finalizar</button>
             </div>
-
-            <div class="nav-buttons">
-                <button class="btn btn-secondary" id="btn-prev" onclick="prevStep()" style="display: none;">Atrás</button>
-                <button class="btn btn-primary" id="btn-next" onclick="nextStep()">Siguiente</button>
-                <button class="btn btn-success" id="btn-save" onclick="processTicket()">Guardar Entrada</button>
-            </div>
+            
+            <button onclick="closeWizard()" style="background:none; border:none; color:var(--text-dim); width:100%; margin-top:15px">Cancelar</button>
         </div>
     </div>
 
-    <div id="qr-fullscreen-modal" onclick="closeFullscreenQR()">
-        <div class="qr-fullscreen-content" onclick="event.stopPropagation()">
-            <button class="close-fullscreen" onclick="closeFullscreenQR()">✕</button>
-            <img id="qr-large-img" src="" alt="QR">
-            <p>Escanear en el lector</p>
-        </div>
+    <div id="qr-full-modal" onclick="this.style.display='none'">
+        <img id="qr-big" src="" alt="">
     </div>
 
     <script>
-        let tickets = JSON.parse(localStorage.getItem('cinema_tickets_v3')) || [];
-        let currentStep = 1;
-        const totalSteps = 3;
+        let tickets = JSON.parse(localStorage.getItem('cinepass_v4')) || [];
+        let currentTicketId = null;
+        let step = 1;
 
-        // --- LÓGICA DEL WIZARD (PASOS) ---
-        function openWizard() {
-            currentStep = 1;
-            updateWizardUI();
-            document.getElementById('wizard-modal').style.display = 'flex';
+        // --- Navegación ---
+        function openWizard() { 
+            step = 1; 
+            currentTicketId = null;
+            document.querySelectorAll('.step-container').forEach(s => s.classList.remove('active'));
+            document.getElementById('step-1').classList.add('active');
+            document.getElementById('wizard-modal').style.display = 'flex'; 
+        }
+        function closeWizard() { document.getElementById('wizard-overlay'); document.getElementById('wizard-modal').style.display='none'; }
+        function nextStep(s) {
+            document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
+            document.getElementById('step-'+s).classList.add('active');
         }
 
-        function closeWizard() {
-            document.getElementById('wizard-modal').style.display = 'none';
-            // Limpiar formulario al cerrar
-            document.querySelectorAll('input').forEach(i => i.value = '');
-            document.querySelectorAll('.file-name').forEach(el => { el.style.display = 'none'; el.innerText = ''; });
+        function labelFile(input, id) {
+            if(input.files[0]) document.getElementById(id).innerText = "✅ Seleccionado";
         }
 
-        function updateFileName(input, textElementId) {
-            const el = document.getElementById(textElementId);
-            if (input.files.length > 0) {
-                el.innerText = input.files[0].name;
-                el.style.display = 'inline-block';
-            } else {
-                el.style.display = 'none';
-            }
-        }
-
-        function updateWizardUI() {
-            // Actualizar vistas de pasos
-            for (let i = 1; i <= totalSteps; i++) {
-                document.getElementById(`step-${i}`).classList.toggle('active', i === currentStep);
-                document.getElementById(`dot-${i}`).classList.toggle('active', i <= currentStep);
-            }
-
-            // Actualizar Títulos
-            const titles = { 1: "1. Película", 2: "2. Detalles de Sala", 3: "3. Código QR" };
-            document.getElementById('step-title').innerText = titles[currentStep];
-
-            // Botones
-            const btnPrev = document.getElementById('btn-prev');
-            const btnNext = document.getElementById('btn-next');
-            const btnSave = document.getElementById('btn-save');
-
-            btnPrev.style.display = currentStep > 1 ? 'block' : 'none';
-            
-            if (currentStep === totalSteps) {
-                btnNext.style.display = 'none';
-                btnSave.style.display = 'block';
-            } else {
-                btnNext.style.display = 'block';
-                btnSave.style.display = 'none';
-            }
-        }
-
-        function nextStep() {
-            // Validación básica antes de avanzar
-            if (currentStep === 1) {
-                if (!document.getElementById('m-name').value.trim()) {
-                    alert("Por favor, ingresa el nombre de la película para continuar.");
-                    return;
-                }
-            }
-            if (currentStep < totalSteps) {
-                currentStep++;
-                updateWizardUI();
-            }
-        }
-
-        function prevStep() {
-            if (currentStep > 1) {
-                currentStep--;
-                updateWizardUI();
-            }
-        }
-
-        // --- LÓGICA DE TICKETS Y QR ---
-        function openFullscreenQR(id, e) {
-            e.stopPropagation(); 
-            const ticket = tickets.find(t => t.id === id);
-            if (ticket) {
-                document.getElementById('qr-large-img').src = ticket.qr || 'https://api.qrserver.com/v1/create-qr-code/?data=error';
-                document.getElementById('qr-fullscreen-modal').style.display = 'flex';
-            }
-        }
-
-        function closeFullscreenQR() {
-            document.getElementById('qr-fullscreen-modal').style.display = 'none';
-        }
-
+        // --- CRUD ---
         const toBase64 = file => new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
+            reader.onerror = e => reject(e);
         });
 
-        async function processTicket() {
-            const btnSave = document.getElementById('btn-save');
-            btnSave.innerText = "Guardando..."; // Feedback visual
-            
+        async function saveTicket() {
             const name = document.getElementById('m-name').value;
-            const imgFile = document.getElementById('m-img').files[0];
-            const qrFile = document.getElementById('m-qr').files[0];
+            if(!name) return alert("Falta nombre");
 
-            const newTicket = {
-                id: Date.now(),
+            const imgF = document.getElementById('m-img').files[0];
+            const qrF = document.getElementById('m-qr').files[0];
+
+            const obj = {
+                id: currentTicketId || Date.now(),
                 name,
-                cine: document.getElementById('m-cine').value || 'Cine',
+                cine: document.getElementById('m-cine').value || 'Cine Local',
                 count: document.getElementById('m-count').value || '1',
-                hall: document.getElementById('m-hall').value || '--',
-                seats: document.getElementById('m-seats').value || '--',
-                poster: imgFile ? await toBase64(imgFile) : null,
-                qr: qrFile ? await toBase64(qrFile) : null
+                hall: document.getElementById('m-hall').value || '-',
+                seats: document.getElementById('m-seats').value || '-',
+                poster: imgF ? await toBase64(imgF) : (currentTicketId ? tickets.find(t=>t.id==currentTicketId).poster : null),
+                qr: qrF ? await toBase64(qrF) : (currentTicketId ? tickets.find(t=>t.id==currentTicketId).qr : null)
             };
 
-            tickets.push(newTicket);
-            localStorage.setItem('cinema_tickets_v3', JSON.stringify(tickets));
-            
-            renderTickets();
-            closeWizard();
-            btnSave.innerText = "Guardar Entrada";
-        }
-
-        function deleteTicket(id, e) {
-            e.stopPropagation();
-            if(confirm("¿Seguro que deseas eliminar esta entrada?")) {
-                tickets = tickets.filter(t => t.id !== id);
-                localStorage.setItem('cinema_tickets_v3', JSON.stringify(tickets));
-                renderTickets();
-            }
-        }
-
-        function renderTickets() {
-            const container = document.getElementById('ticket-container');
-            const empty = document.getElementById('empty-state');
-            container.innerHTML = '';
-
-            if (tickets.length === 0) {
-                empty.style.display = 'block';
+            if(currentTicketId) {
+                tickets = tickets.map(t => t.id === currentTicketId ? obj : t);
             } else {
-                empty.style.display = 'none';
-                tickets.forEach(t => {
-                    const wrap = document.createElement('div');
-                    wrap.className = 'ticket-wrapper';
-                    wrap.onclick = () => wrap.classList.toggle('is-flipped');
+                tickets.push(obj);
+            }
 
-                    wrap.innerHTML = `
-                        <button class="delete-btn" onclick="deleteTicket(${t.id}, event)">✕</button>
-                        <div class="ticket-front">
-                            ${t.poster ? `<img src="${t.poster}">` : `<div style="width:100%;height:100%;background:linear-gradient(45deg, #1a1a1c, #333)"></div>`}
-                            <div class="overlay-text">${t.name}</div>
-                        </div>
-                        <div class="ticket-back">
-                            <img src="${t.qr || 'https://api.qrserver.com/v1/create-qr-code/?data=Sin+QR'}" class="qr-img" onclick="openFullscreenQR(${t.id}, event)" title="Toca para ampliar">
-                            <div class="info-grid">
-                                <span>Entrada Digital</span>
-                                <h3>${t.name}</h3>
-                                <p>📍 ${t.cine}</p>
-                                <p>Sala ${t.hall} • ${t.count} Pers.</p>
-                                <p style="margin-top:5px; font-weight:bold; color:black;">Butacas: ${t.seats}</p>
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(wrap);
-                });
+            localStorage.setItem('cinepass_v4', JSON.stringify(tickets));
+            render();
+            closeWizard();
+            if(currentTicketId) closeDetail();
+        }
+
+        function handleDelete() {
+            if(confirm("¿Eliminar entrada?")) {
+                tickets = tickets.filter(t => t.id !== currentTicketId);
+                localStorage.setItem('cinepass_v4', JSON.stringify(tickets));
+                render();
+                closeDetail();
             }
         }
 
-        // PWA setup
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('data:text/javascript;base64,' + btoa('self.addEventListener("fetch", (e) => {});'));
+        // --- Renderizado y Vistas ---
+        function render() {
+            const container = document.getElementById('ticket-container');
+            container.innerHTML = '';
+            document.getElementById('empty-state').style.display = tickets.length ? 'none' : 'block';
+            
+            tickets.forEach(t => {
+                const card = document.createElement('div');
+                card.className = 'home-card';
+                card.onclick = () => openDetail(t.id);
+                card.innerHTML = `
+                    <img src="${t.poster || 'https://via.placeholder.com/500x280?text=CinePass'}" alt="">
+                    <div class="label">${t.name}</div>
+                `;
+                container.appendChild(card);
             });
         }
 
-        renderTickets();
+        function openDetail(id) {
+            const t = tickets.find(x => x.id === id);
+            currentTicketId = id;
+            document.getElementById('det-title').innerText = t.name;
+            document.getElementById('det-img').src = t.poster || '';
+            document.getElementById('det-cine').innerText = t.cine;
+            document.getElementById('det-hall').innerText = t.hall;
+            document.getElementById('det-count').innerText = t.count;
+            document.getElementById('det-seats').innerText = t.seats;
+            document.getElementById('det-qr').src = t.qr || '';
+            document.getElementById('detail-view').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDetail() {
+            document.getElementById('detail-view').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function openFullQR() {
+            document.getElementById('qr-big').src = document.getElementById('det-qr').src;
+            document.getElementById('qr-full-modal').style.display = 'flex';
+        }
+
+        function editTicket() {
+            const t = tickets.find(x => x.id === currentTicketId);
+            document.getElementById('m-name').value = t.name;
+            document.getElementById('m-cine').value = t.cine;
+            document.getElementById('m-count').value = t.count;
+            document.getElementById('m-hall').value = t.hall;
+            document.getElementById('m-seats').value = t.seats;
+            document.getElementById('wiz-title').innerText = "Editar Entrada";
+            openWizard();
+        }
+
+        render();
     </script>
 </body>
 </html>
