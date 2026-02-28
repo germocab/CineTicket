@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#000000">
-    <title>CinePass Pro</title>
+    <title>Tickets</title>
     <style>
         :root {
             --bg: #000000;
@@ -69,7 +69,7 @@
 <body>
 
     <header>
-        <h1>CinePass</h1>
+        <h1>Mis Entradas</h1>
         <button id="add-btn" onclick="openWizard()">+</button>
     </header>
 
@@ -87,14 +87,14 @@
         <div class="detail-content">
             <h2 id="det-title" class="detail-title"></h2>
             <div class="info-row">
-                <div class="info-pill"><span>📍 Cine</span><div id="det-cine"></div></div>
-                <div class="info-pill"><span>🚪 Sala</span><div id="det-hall"></div></div>
-                <div class="info-pill"><span>👥 Personas</span><div id="det-count"></div></div>
-                <div class="info-pill" style="width: 100%;"><span>💺 Butacas</span><div id="det-seats"></div></div>
+                <div class="info-pill"><span>Cine</span><div id="det-cine"></div></div>
+                <div class="info-pill"><span>Sala</span><div id="det-hall"></div></div>
+                <div class="info-pill"><span>Personas</span><div id="det-count"></div></div>
+                <div class="info-pill" style="width: 100%;"><span>Butacas</span><div id="det-seats"></div></div>
             </div>
             <div class="detail-actions">
-                <button class="action-btn btn-edit" onclick="editTicket()">✏️ Editar</button>
-                <button class="action-btn btn-delete" onclick="handleDelete()">🗑️ Borrar</button>
+                <button class="action-btn btn-edit" onclick="editTicket()">Editar</button>
+                <button class="action-btn btn-delete" onclick="handleDelete()">Borrar</button>
             </div>
             <div class="qr-section" onclick="openFullQR()">
                 <img id="det-qr" src="">
@@ -110,7 +110,7 @@
             <div id="step-1" class="step-container active">
                 <input type="text" id="m-name" placeholder="Nombre de la película">
                 <div class="file-box" onclick="document.getElementById('m-img').click()">
-                    <span id="p-label">🖼️ Subir Póster</span>
+                    <span id="p-label">Subir Póster</span>
                     <input type="file" id="m-img" hidden accept="image/*" onchange="labelFile(this, 'p-label')">
                 </div>
                 <button class="action-btn" style="background:white; color:black; margin-top:10px" onclick="nextStep(2)">Siguiente</button>
@@ -128,7 +128,7 @@
 
             <div id="step-3" class="step-container">
                 <div class="file-box" onclick="document.getElementById('m-qr').click()">
-                    <span id="q-label">🔳 Subir Código QR</span>
+                    <span id="q-label">Subir Código QR</span>
                     <input type="file" id="m-qr" hidden accept="image/*" onchange="labelFile(this, 'q-label')">
                 </div>
                 <button class="action-btn" style="background:var(--accent); color:white; margin-top:10px" id="final-btn" onclick="saveTicket()">Finalizar</button>
@@ -163,8 +163,8 @@
             currentTicketId = null;
             document.getElementById('wiz-title').innerText = "Nueva Entrada";
             document.querySelectorAll('input').forEach(i => i.value = '');
-            document.getElementById('p-label').innerText = "🖼️ Subir Póster";
-            document.getElementById('q-label').innerText = "🔳 Subir Código QR";
+            document.getElementById('p-label').innerText = "Subir Póster";
+            document.getElementById('q-label').innerText = "Subir Código QR";
             nextStep(1);
             document.getElementById('wizard-modal').style.display = 'flex';
         }
@@ -176,7 +176,7 @@
             document.getElementById('step-' + s).classList.add('active');
         }
 
-        function labelFile(input, id) { if(input.files[0]) document.getElementById(id).innerText = "✅ Seleccionado"; }
+        function labelFile(input, id) { if(input.files[0]) document.getElementById(id).innerText = "Seleccionado"; }
 
         const toBase64 = file => new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -277,3 +277,4 @@
     </script>
 </body>
 </html>
+
