@@ -1,0 +1,17 @@
+{
+  "name": "CineTicket",
+  "short_name": "CineTicket",
+  "description": "Tus entradas de cine, siempre a mano y sin conexión.",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07070b",
+  "theme_color": "#07070b",
+  "lang": "es",
+  "icons": [
+    { "src": "favicon_io/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "favicon_io/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
