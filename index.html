@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CineTicket">
 <title>CineTicket</title>
+<script>try{if(localStorage.getItem('cineticket_theme')==='light')document.documentElement.dataset.theme='light'}catch{}</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
@@ -212,6 +213,84 @@ input[type=date]:focus,input[type=time]:focus{border-color:rgba(255,255,255,.4);
 #toast{position:fixed;left:50%;bottom:calc(var(--bot) + 30px);z-index:400;transform:translate(-50%,30px);padding:12px 20px;border-radius:99px;font-size:.9rem;font-weight:600;opacity:0;pointer-events:none;transition:.45s var(--spring);white-space:nowrap}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ===== v2.7 ===== */
+:root{color-scheme:dark}
+[data-theme=light]{color-scheme:light;--bg:#f2f2f7;--text:#1c1c1e;--dim:rgba(60,60,67,.62);--glass:rgba(255,255,255,.66);--glass-2:rgba(255,255,255,.9);--stroke:rgba(0,0,0,.09)}
+.icon-btn svg{width:22px;height:22px;fill:currentColor}
+
+/* Botón de opciones + menú contextual */
+#menu-bg{position:fixed;inset:0;z-index:40;display:none}
+#menu-bg.on{display:block}
+#menu{position:fixed;top:calc(var(--top) + 68px);right:max(22px,calc((100vw - 560px)/2 + 22px));z-index:41;min-width:220px;padding:6px;border-radius:22px;background:rgba(30,30,38,.8);
+  transform-origin:top right;transform:scale(.78) translateY(-10px);opacity:0;visibility:hidden;
+  transition:transform .5s var(--spring),opacity .25s var(--ease),visibility 0s .5s}
+#menu.on{transform:none;opacity:1;visibility:visible;transition-delay:0s}
+.mi{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;border-radius:16px;font-weight:600;font-size:.98rem;text-align:left;transition:background .2s}
+.mi:hover,.mi:active{background:var(--glass-2)}
+.mi svg{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mi-sep{height:1px;background:var(--stroke);margin:3px 12px}
+
+/* Botón flotante Agregar (abajo al centro) */
+.fab{position:fixed;left:50%;bottom:calc(var(--bot) + 22px);z-index:30;width:66px;height:66px;border-radius:50%;transform:translateX(-50%);display:grid;place-items:center;color:#fff;
+  background:linear-gradient(135deg,var(--accent),#ff6a3d);box-shadow:0 16px 32px -8px rgba(255,69,58,.7),inset 0 1px 0 rgba(255,255,255,.35);
+  transition:transform .35s var(--spring);animation:fabIn .8s .25s var(--spring) backwards}
+.fab:active{transform:translateX(-50%) scale(.88)}
+.fab svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
+@keyframes fabIn{from{opacity:0;transform:translate(-50%,90px) scale(.6)}}
+
+/* Pantalla de ajustes */
+#settings{position:fixed;inset:0;z-index:105;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);visibility:hidden;opacity:0;transform:translateY(6%) scale(.96);
+  transition:opacity .35s var(--ease),transform .5s var(--spring),visibility 0s .5s}
+#settings.on{visibility:visible;opacity:1;transform:none;transition-delay:0s}
+.s-wrap{max-width:560px;margin:0 auto;padding:calc(var(--top) + 76px) 20px calc(var(--bot) + 40px)}
+.s-title{font-size:2rem;font-weight:800;letter-spacing:-.035em;margin-bottom:26px}
+.s-group{margin-bottom:26px}
+.s-label{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin:0 6px 8px}
+.s-card{border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.s-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.s-stats div{padding:12px 14px;border-radius:16px;background:rgba(127,127,127,.13)}
+.s-stats b{display:block;font-size:1.7rem;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.s-stats span{color:var(--dim);font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.s-note{color:var(--dim);font-size:.88rem;line-height:1.45}
+.s-btn{flex:none;width:100%;display:flex;align-items:center;justify-content:center;gap:10px}
+.s-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.s-about{flex-direction:row;justify-content:space-between;align-items:center;font-weight:700}
+.s-about span{color:var(--dim);font-weight:600}
+.imp{display:none;flex-direction:column;gap:12px;padding-top:14px;border-top:1px solid var(--stroke)}
+.imp.on{display:flex;animation:stepIn .5s var(--spring)}
+#imp-msg{font-size:.92rem;line-height:1.5}
+.imp small{color:var(--dim);font-size:.8rem;line-height:1.4}
+.imp .cancel{margin:0 auto}
+#toast{bottom:calc(var(--bot) + 104px)}
+main{padding-bottom:calc(var(--bot) + 120px)}
+
+/* Modo claro */
+[data-theme=light] .glass{box-shadow:0 8px 28px rgba(0,0,0,.09),inset 0 1px 0 rgba(255,255,255,.8)}
+[data-theme=light] .ambient i{opacity:.2}
+[data-theme=light] .ambient i:nth-child(3){opacity:.1}
+[data-theme=light] header.top{background:linear-gradient(rgba(242,242,247,.86),rgba(242,242,247,.55))}
+[data-theme=light] #menu{background:rgba(250,250,253,.86)}
+[data-theme=light] .sheet{background:rgba(247,247,251,.86)}
+[data-theme=light] .overlay{background:rgba(0,0,0,.32)}
+[data-theme=light] .grab{background:rgba(0,0,0,.2)}
+[data-theme=light] .dots i{background:rgba(0,0,0,.1)}
+[data-theme=light] .sheet input[type=text],[data-theme=light] .sheet input[type=number],[data-theme=light] .sheet input[type=search],
+[data-theme=light] .sheet input[type=date],[data-theme=light] .sheet input[type=time]{background:rgba(0,0,0,.05);color-scheme:light}
+[data-theme=light] .sheet input:focus{background:rgba(0,0,0,.07);border-color:rgba(0,0,0,.28)}
+[data-theme=light] input::placeholder{color:rgba(60,60,67,.42)}
+[data-theme=light] .tabs .ind{background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.14)}
+[data-theme=light] .tabs em,[data-theme=light] .chip,[data-theme=light] .search button{background:rgba(0,0,0,.08)}
+[data-theme=light] .tabs button.bump em{background:#30d158;color:#04210c}
+[data-theme=light] .card.seen .chip{background:rgba(48,209,88,.22);color:#1a8a3c}
+[data-theme=light] .btn.light{background:#1c1c1e;color:#fff}
+[data-theme=light] .drop{border-color:rgba(0,0,0,.25)}
+[data-theme=light] .drop.ok{border-color:#30d158}
+[data-theme=light] .spin{border-color:rgba(0,0,0,.15);border-top-color:var(--text)}
+[data-theme=light] .d-bg{filter:blur(60px) saturate(1.4) brightness(1.15);opacity:.55}
+[data-theme=light] .d-title{text-shadow:none}
+[data-theme=light] #scan-fx{background:rgba(242,242,247,.6)}
+[data-theme=light] .btn.danger,[data-theme=light] .btn.glass.danger{color:#d70015}
 </style>
 </head>
 <body>
@@ -222,7 +301,7 @@ input[type=date]:focus,input[type=time]:focus{border-color:rgba(255,255,255,.4);
     <h1>Cine<b>Ticket</b></h1>
     <div class="hdr-actions">
       <button id="install-btn" class="icon-btn glass" onclick="installApp()" aria-label="Instalar">⤓</button>
-      <button class="icon-btn glass" onclick="openWizard()" aria-label="Nueva entrada">＋</button>
+      <button class="icon-btn glass" id="opt-btn" onclick="toggleMenu()" aria-label="Options" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg></button>
     </div>
   </div>
   <nav class="tabs glass" id="tabs" data-tab="tickets">
@@ -235,8 +314,47 @@ input[type=date]:focus,input[type=time]:focus{border-color:rgba(255,255,255,.4);
 <div class="searchwrap"><label class="search glass"><span class="mag">⌕</span>
   <input type="search" id="q" placeholder="Buscar película, cine o butaca" autocomplete="off" oninput="render(null,true)">
   <button id="q-x" onclick="clearQ()" aria-label="Borrar búsqueda" style="display:none">✕</button></label></div>
+<!-- Menú de opciones -->
+<div id="menu-bg" onclick="closeMenu()"></div>
+<div id="menu" class="glass" role="menu">
+  <button class="mi" role="menuitem" onclick="toggleTheme()"><svg id="mi-theme-ico" viewBox="0 0 24 24"></svg><span id="mi-theme-lbl">Light mode</span></button>
+  <div class="mi-sep"></div>
+  <button class="mi" role="menuitem" onclick="openSettings()"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span>Settings</span></button>
+</div>
+
 <main id="list"></main>
 <div class="empty" id="empty"><div class="ico">🎟️</div><h2>Aún no hay entradas</h2><p>Toca ＋ y escribe el nombre de la película: el póster se agrega solo.</p></div>
+
+<!-- Botón flotante: agregar película -->
+<button class="fab" onclick="openWizard()" aria-label="Add movie"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+
+<!-- Ajustes -->
+<section id="settings" aria-label="Settings">
+  <button class="back icon-btn glass" onclick="closeSettings()" aria-label="Close">✕</button>
+  <div class="s-wrap">
+    <h2 class="s-title">Settings</h2>
+    <div class="s-group">
+      <div class="s-label">Catalog</div>
+      <div class="s-card glass">
+        <div class="s-stats"><div><b id="st-total">0</b><span>Tickets</span></div><div><b id="st-watched">0</b><span>Watched</span></div></div>
+        <p class="s-note">Export your catalog as a file, posters and QR codes included, and import it on another device to pick up where you left off.</p>
+        <button class="btn main s-btn" id="exp-btn" onclick="exportCatalog()"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span id="exp-lbl">Export catalog</span></button>
+        <button class="btn glass s-btn" onclick="$('imp-file').click()"><svg viewBox="0 0 24 24"><path d="M12 16V5M7 9l5-5 5 5M5 20h14"/></svg><span>Import catalog</span></button>
+        <input type="file" id="imp-file" hidden accept=".json,application/json" onchange="onImportFile(this)">
+        <div class="imp" id="imp-panel">
+          <div id="imp-msg"></div>
+          <div class="row"><button class="btn glass" id="imp-merge" onclick="applyImport('merge')">Merge</button><button class="btn glass danger" onclick="applyImport('replace')">Replace</button></div>
+          <small>Merge keeps your current tickets and adds the new ones. Replace swaps your whole catalog for the one in the file.</small>
+          <button class="cancel" onclick="cancelImport()">Cancel</button>
+        </div>
+      </div>
+    </div>
+    <div class="s-group">
+      <div class="s-label">About</div>
+      <div class="s-card glass s-about"><div>CineTicket</div><span>Version <span id="app-ver"></span></span></div>
+    </div>
+  </div>
+</section>
 
 <!-- Detalle -->
 <section id="detail">
@@ -589,8 +707,93 @@ async function installApp(){if(!deferred)return;deferred.prompt();await deferred
 addEventListener('appinstalled',()=>{$('install-btn').style.display='none';toast('CineTicket instalada 🎬')});
 addEventListener('offline',()=>toast('Sin conexión · tus entradas siguen disponibles'));
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
-addEventListener('keydown',e=>{if(e.key==='Escape'){closeQR();closeWizard();closeDetail()}});
+addEventListener('keydown',e=>{if(e.key==='Escape'){closeMenu();closeSettings();closeQR();closeWizard();closeDetail()}});
 
+/* ---------- v2.7: Tema, menú y ajustes ---------- */
+const APP_VERSION='2.7',THEME_KEY='cineticket_theme';
+let theme=document.documentElement.dataset.theme==='light'?'light':'dark';
+const ICO_SUN='<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+const ICO_MOON='<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>';
+function applyTheme(){
+  document.documentElement.dataset.theme=theme;
+  document.querySelector('meta[name=theme-color]').content=theme==='light'?'#f2f2f7':'#07070b';
+  $('mi-theme-lbl').textContent=theme==='light'?'Dark mode':'Light mode';
+  $('mi-theme-ico').innerHTML=theme==='light'?ICO_MOON:ICO_SUN;
+}
+function toggleTheme(){theme=theme==='light'?'dark':'light';try{localStorage.setItem(THEME_KEY,theme)}catch{}applyTheme();closeMenu()}
+function openMenu(){$('menu').classList.add('on');$('menu-bg').classList.add('on');$('opt-btn').setAttribute('aria-expanded','true')}
+function closeMenu(){$('menu').classList.remove('on');$('menu-bg').classList.remove('on');$('opt-btn').setAttribute('aria-expanded','false')}
+function toggleMenu(){$('menu').classList.contains('on')?closeMenu():openMenu()}
+
+function refreshStats(){$('st-total').textContent=tickets.length;$('st-watched').textContent=tickets.filter(t=>t.watched).length}
+function openSettings(){closeMenu();refreshStats();$('settings').scrollTop=0;$('settings').classList.add('on');document.body.style.overflow='hidden'}
+function closeSettings(){if(!$('settings').classList.contains('on'))return;$('settings').classList.remove('on');cancelImport();document.body.style.overflow=''}
+
+/* ---------- Exportar / Importar catálogo ---------- */
+async function exportCatalog(){
+  if(!tickets.length)return toast('Nothing to export yet');
+  const b=$('exp-btn'),l=$('exp-lbl');b.disabled=true;l.textContent='Preparing…';
+  try{
+    // los pósters que solo existen como URL se incrustan para que el archivo funcione sin internet
+    const list=await Promise.all(tickets.map(async t=>{
+      if(t.poster&&/^https?:/i.test(t.poster)){
+        try{const bl=await tmo(fetch(t.poster).then(r=>r.blob()),6000);return{...t,poster:await shrink(bl,700,'image/jpeg',.86)}}catch{}
+      }
+      return t;
+    }));
+    const data={app:'CineTicket',format:1,version:APP_VERSION,exportedAt:new Date().toISOString(),tickets:list};
+    const url=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));
+    const a=document.createElement('a');a.href=url;a.download=`cineticket-catalog-${isoDay(Date.now())}.json`;
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
+    toast(`Catalog exported · ${list.length} ticket${list.length===1?'':'s'}`);
+  }catch{toast('Export failed')}
+  finally{b.disabled=false;l.textContent='Export catalog'}
+}
+
+const IMG_RE=/^(data:image\/[a-z0-9.+-]+;base64,[A-Za-z0-9+/=]+|https?:\/\/[^\s"'()<>\\]+)$/i;
+const cleanImg=v=>typeof v==='string'&&IMG_RE.test(v)?v:null;
+function cleanTicket(x,i){
+  if(!x||typeof x!=='object'||typeof x.name!=='string'||!x.name.trim())return null;
+  const s=(v,d)=>v==null||String(v).trim()===''?d:String(v).slice(0,200);
+  let id=Number(x.id);if(!Number.isFinite(id)||id<=0)id=Date.now()+i;
+  return{id,name:x.name.trim().slice(0,200),cine:s(x.cine,'Cine Local'),count:s(x.count,'1'),hall:s(x.hall,'-'),seats:s(x.seats,'-'),
+    when:/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(x.when)?x.when:'',poster:cleanImg(x.poster),qr:cleanImg(x.qr),
+    watched:!!x.watched,watchedAt:x.watched?(Number(x.watchedAt)||0):0};
+}
+let pending=null;
+async function onImportFile(inp){
+  const f=inp.files[0];inp.value='';if(!f)return;
+  try{
+    const raw=JSON.parse(await f.text());
+    const arr=Array.isArray(raw)?raw:raw&&Array.isArray(raw.tickets)?raw.tickets:null;
+    if(!arr)throw 0;
+    const seen=new Set(),list=[];
+    arr.forEach((x,i)=>{const t=cleanTicket(x,i);if(t&&!seen.has(t.id)){seen.add(t.id);list.push(t)}});
+    if(!list.length)throw 0;
+    const have=new Set(tickets.map(t=>t.id)),fresh=list.filter(t=>!have.has(t.id)).length;
+    pending={list,fresh};
+    $('imp-msg').innerHTML=`<b>${list.length} ticket${list.length===1?'':'s'}</b> found in “${esc(f.name)}”<br><span style="color:var(--dim)">${fresh} new · ${list.length-fresh} already on this device</span>`;
+    $('imp-merge').textContent=fresh?`Merge (+${fresh})`:'Merge';
+    $('imp-panel').classList.add('on');
+  }catch{cancelImport();toast('That file is not a valid catalog')}
+}
+function cancelImport(){pending=null;$('imp-panel').classList.remove('on')}
+function applyImport(mode){
+  if(!pending)return;
+  const{list,fresh}=pending,backup=tickets;
+  if(mode==='replace'){
+    if(tickets.length&&!confirm(`Replace your ${tickets.length} current ticket${tickets.length===1?'':'s'} with the ${list.length} from the file?`))return;
+    tickets=list;
+  }else{
+    if(!fresh){cancelImport();return toast('Nothing new to import')}
+    const have=new Set(tickets.map(t=>t.id));tickets=tickets.concat(list.filter(t=>!have.has(t.id)));
+  }
+  if(!persist()){tickets=backup;return}
+  cancelImport();tab='tickets';syncTabs();$('q').value='';render(null,true);refreshStats();
+  toast(mode==='replace'?`Catalog replaced · ${list.length} ticket${list.length===1?'':'s'}`:`${fresh} ticket${fresh===1?'':'s'} added`);
+}
+
+$('app-ver').textContent=APP_VERSION;applyTheme();
 render();
 </script>
 </body>
