@@ -10,8 +10,10 @@
 <meta name="apple-mobile-web-app-title" content="CineTicket">
 <title>CineTicket</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="favicon_io/icon-192x192.png">
-<link rel="apple-touch-icon" href="favicon_io/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">
+<link rel="shortcut icon" href="favicon_io/favicon.ico">
 <style>
 :root{
   --bg:#07070b; --text:#f5f5f7; --dim:rgba(235,235,245,.55);
@@ -148,6 +150,17 @@ input::placeholder{color:rgba(235,235,245,.35)}
 .qrprev{display:none;width:150px;height:150px;object-fit:contain;background:#fff;border-radius:16px;padding:8px;margin:0 auto}.qrprev.on{display:block}
 .cancel{display:block;margin:14px auto 0;color:var(--dim);font-size:.9rem;padding:8px 16px}
 
+/* Vuelo del póster → tarjeta */
+.fly{position:fixed;z-index:500;overflow:hidden;border-radius:22px;pointer-events:none;background:#1c1c24;
+  box-shadow:0 30px 70px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.18),0 0 60px rgba(255,69,58,.25);will-change:left,top,width,height,transform}
+.fly img{width:100%;height:100%;object-fit:cover;object-position:center 25%;display:block}
+.card.noanim{animation:none;opacity:1;transform:none}
+.card.ghost{visibility:hidden}
+.card.reveal{animation:settle .55s var(--spring)}
+.card.reveal .meta{animation:metaIn .6s var(--ease) both}
+@keyframes settle{from{transform:scale(.965)}to{transform:none}}
+@keyframes metaIn{from{opacity:0;transform:translateY(14px)}}
+.linkbtn{align-self:flex-start;color:var(--dim);font-size:.8rem;text-decoration:underline;text-underline-offset:3px;padding:2px 0}
 /* Toast */
 #toast{position:fixed;left:50%;bottom:calc(var(--bot) + 30px);z-index:400;transform:translate(-50%,30px);padding:12px 20px;border-radius:99px;font-size:.9rem;font-weight:600;opacity:0;pointer-events:none;transition:.45s var(--spring);white-space:nowrap}
 #toast.on{opacity:1;transform:translate(-50%,0)}
@@ -206,6 +219,7 @@ input::placeholder{color:rgba(235,235,245,.35)}
       <input type="search" id="m-name" placeholder="Nombre de la película" autocomplete="off" oninput="onName()">
       <div class="status" id="p-status">Escribe el nombre y buscaremos el póster automáticamente.</div>
       <div class="picker" id="picker"></div>
+      <button class="linkbtn" onclick="setTmdb()">Mejorar la búsqueda con clave gratuita de TMDB (opcional)</button>
       <img class="prev" id="p-prev" alt="">
       <label class="drop" id="p-drop">🖼️ <span id="p-lbl">¿Prefieres subir tu propio póster?</span>
         <input type="file" id="m-img" hidden accept="image/*" onchange="pickFile(this,'poster')"></label>
@@ -243,11 +257,12 @@ const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(tickets));return 
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2200)}
 
 /* ---------- Lista ---------- */
-function render(){
+function render(ghostId,still){
   const l=$('list');l.innerHTML='';
   $('empty').style.display=tickets.length?'none':'block';
   tickets.forEach((t,i)=>{
-    const c=document.createElement('div');c.className='card';c.style.setProperty('--i',i);
+    const c=document.createElement('div');c.className='card'+(still?' noanim':'')+(t.id===ghostId?' ghost':'');
+    c.style.setProperty('--i',i);c.dataset.id=t.id;
     c.onclick=()=>openDetail(t.id);
     c.innerHTML=(t.poster?`<img src="${esc(t.poster)}" alt="" loading="lazy">`:'<div class="noimg">🎬</div>')+
       `<div class="meta glass"><div><div class="t">${esc(t.name)}</div><div class="s">${esc(t.cine)}</div></div><span class="chip">Sala ${esc(t.hall)}</span></div>`;
@@ -268,7 +283,7 @@ function openDetail(id){
 function closeDetail(){$('detail').classList.remove('on');document.body.style.overflow=''}
 function delTicket(){
   if(!confirm('¿Eliminar esta entrada?'))return;
-  tickets=tickets.filter(t=>t.id!==curId);persist();render();closeDetail();toast('Entrada eliminada');
+  tickets=tickets.filter(t=>t.id!==curId);persist();render(null,true);closeDetail();toast('Entrada eliminada');
 }
 async function openQR(){
   if(!$('d-qr').src||$('d-ticket').classList.contains('none'))return;
@@ -304,7 +319,13 @@ function go(n){
 }
 function setPrev(id,src){const e=$(id);e.classList.toggle('on',!!src);if(src)e.src=src}
 
-/* ---------- Póster automático (iTunes Search API, sin clave) ---------- */
+/* ---------- Póster automático: TMDB (opcional) + iTunes + Wikipedia, en paralelo ---------- */
+const TMDB_KEY='cineticket_tmdb';
+const tmo=(p,ms=8000)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]);
+function setTmdb(){
+  const v=prompt('Pega tu clave de TMDB (API key v3 o token de lectura). Vacío para quitarla:',localStorage.getItem(TMDB_KEY)||'');
+  if(v===null)return;v.trim()?localStorage.setItem(TMDB_KEY,v.trim()):localStorage.removeItem(TMDB_KEY);onName();
+}
 function onName(){
   clearTimeout(timer);const q=$('m-name').value.trim();
   if(q.length<2){$('picker').innerHTML='';return}
@@ -312,40 +333,61 @@ function onName(){
   timer=setTimeout(()=>findPosters(q),450);
 }
 function jsonp(url){return new Promise((res,rej)=>{
-  const cb='cb'+Date.now(),s=document.createElement('script');
-  window[cb]=d=>{res(d);s.remove();delete window[cb]};s.onerror=()=>{rej();s.remove()};
-  s.src=url+'&callback='+cb;document.head.appendChild(s);setTimeout(()=>rej(),8000)})}
-async function searchItunes(q,country){
-  const url=`https://itunes.apple.com/search?media=movie&entity=movie&limit=8&country=${country}&term=${encodeURIComponent(q)}`;
-  try{return (await (await fetch(url)).json()).results||[]}catch{return (await jsonp(url)).results||[]}
+  const cb='cb'+Date.now()+Math.floor(Math.random()*1e4),s=document.createElement('script');
+  window[cb]=d=>{res(d);s.remove();delete window[cb]};s.onerror=()=>{rej(new Error('jsonp'));s.remove()};
+  s.src=url+'&callback='+cb;document.head.appendChild(s)})}
+
+async function pTMDB(q){
+  const k=localStorage.getItem(TMDB_KEY);if(!k)return[];
+  const bearer=k.length>40;
+  const u=`https://api.themoviedb.org/3/search/movie?include_adult=false&language=es-ES&query=${encodeURIComponent(q)}`+(bearer?'':'&api_key='+k);
+  const d=await (await fetch(u,bearer?{headers:{Authorization:'Bearer '+k}}:{})).json();
+  return (d.results||[]).filter(x=>x.poster_path).slice(0,8).map(x=>({title:x.title,year:(x.release_date||'').slice(0,4),url:'https://image.tmdb.org/t/p/w500'+x.poster_path}));
+}
+async function pItunes(q){
+  const region=(navigator.language.split('-')[1]||'US').toUpperCase();
+  const run=async c=>{
+    const u=`https://itunes.apple.com/search?media=movie&entity=movie&limit=8&country=${c}&term=${encodeURIComponent(q)}`;
+    let d;try{d=await (await fetch(u)).json()}catch{d=await jsonp(u)}return d.results||[]};
+  let r=await run(region);if(!r.length&&region!=='US')r=await run('US');
+  return r.filter(x=>x.artworkUrl100).map(x=>({title:x.trackName,year:(x.releaseDate||'').slice(0,4),url:x.artworkUrl100.replace(/\d+x\d+bb/,'500x750bb')}));
+}
+async function pWiki(q){
+  const one=async(lang,suf)=>{
+    const u=`https://${lang}.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=8&prop=pageimages&piprop=thumbnail&pithumbsize=500&gsrsearch=${encodeURIComponent(q+' '+suf)}`;
+    const d=await (await fetch(u)).json();
+    return Object.values(d.query?.pages||{}).filter(p=>p.thumbnail).sort((a,b)=>a.index-b.index).map(p=>({title:p.title,year:'',url:p.thumbnail.source}))};
+  const r=await Promise.allSettled([one('es','película'),one('en','film')]);
+  if(r.every(x=>x.status==='rejected'))throw r[0].reason;
+  return r.flatMap(x=>x.value||[]);
 }
 async function findPosters(q){
-  const n=++reqN;
-  try{
-    const region=(navigator.language.split('-')[1]||'US').toUpperCase();
-    let r=await searchItunes(q,region);
-    if(!r.length&&region!=='US')r=await searchItunes(q,'US');
+  const n=++reqN,seen=new Set(),p=$('picker');p.innerHTML='';
+  let pending=3,failed=0,count=0;
+  const done=()=>{ if(--pending>0||n!==reqN)return;
+    if(count)return;
+    $('p-status').textContent=failed===3?'No pudimos conectar con los buscadores de pósters. Revisa tu conexión o sube uno propio.':'Sin resultados. Prueba otro nombre o sube el póster.';};
+  [pTMDB,pItunes,pWiki].forEach(fn=>tmo(fn(q)).then(list=>{
     if(n!==reqN)return;
-    const items=r.filter(x=>x.artworkUrl100).map(x=>({title:x.trackName,year:(x.releaseDate||'').slice(0,4),url:x.artworkUrl100.replace(/\d+x\d+bb/,'500x750bb')}));
-    const p=$('picker');p.innerHTML='';
-    if(!items.length){$('p-status').textContent='No encontramos póster. Puedes subir uno propio.';return}
-    $('p-status').textContent='Elige tu película:';
-    items.forEach((it,i)=>{
-      const b=document.createElement('button');b.style.setProperty('--i',i);b.title=`${it.title} (${it.year})`;
-      b.innerHTML=`<img src="${esc(it.url)}" alt="">`;b.onclick=()=>choose(it,b);p.appendChild(b);
-      if(i===0)choose(it,b,true);
+    list.forEach(it=>{
+      if(seen.has(it.url))return;seen.add(it.url);
+      const b=document.createElement('button');b.style.setProperty('--i',count);b.title=it.title+(it.year?` (${it.year})`:'');
+      const im=new Image();im.referrerPolicy='no-referrer';im.alt='';im.src=it.url;im.onerror=()=>b.remove();b.appendChild(im);
+      b.onclick=()=>choose(it,b);p.appendChild(b);
+      if(count++===0&&!wiz.manual)choose(it,b);
     });
-  }catch{ if(n===reqN)$('p-status').textContent='Sin conexión: sube el póster manualmente.'}
+  }).catch(e=>{failed++;console.warn('Póster:',fn.name,e)}).finally(done));
 }
-async function choose(it,btn,auto){
+async function choose(it,btn){
+  wiz.manual=false;
   document.querySelectorAll('.picker button').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');
-  $('p-status').textContent=`${it.title}${it.year?' ('+it.year+')':''}`;
+  $('p-status').textContent=it.title+(it.year?` (${it.year})`:'');
   wiz.poster=it.url;setPrev('p-prev',it.url);
-  try{ // guardamos copia local para que funcione sin internet
+  try{ // copia local para uso sin internet
     const blob=await (await fetch(it.url)).blob();
     const d=await shrink(blob,700,'image/jpeg',.86);
     if(wiz.poster===it.url){wiz.poster=d;setPrev('p-prev',d)}
-  }catch{/* si el CORS falla, se guarda la URL y el service worker la cachea */}
+  }catch{/* si el CORS falla se guarda la URL y el service worker la cachea */}
 }
 
 /* ---------- Archivos ---------- */
@@ -358,22 +400,49 @@ async function shrink(blob,max,type,q){
 async function pickFile(inp,kind){
   const f=inp.files[0];if(!f)return;
   try{
-    if(kind==='poster'){wiz.poster=await shrink(f,700,'image/jpeg',.86);setPrev('p-prev',wiz.poster);$('p-drop').classList.add('ok');$('p-lbl').textContent='Póster propio cargado ✓';
+    if(kind==='poster'){wiz.manual=true;wiz.poster=await shrink(f,700,'image/jpeg',.86);setPrev('p-prev',wiz.poster);$('p-drop').classList.add('ok');$('p-lbl').textContent='Póster propio cargado ✓';
       document.querySelectorAll('.picker button').forEach(b=>b.classList.remove('sel'))}
     else{wiz.qr=await shrink(f,1000,'image/png');setPrev('q-prev',wiz.qr);$('q-drop').classList.add('ok');$('q-lbl').textContent='QR cargado ✓'}
   }catch{toast('No se pudo leer la imagen')}
 }
 
+let saving=false;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function save(){
+  if(saving)return;
   const name=$('m-name').value.trim();
   if(!name){go(1);$('m-name').focus();return toast('Escribe el nombre de la película')}
-  const t={id:curId&&$('w-title').textContent.startsWith('Editar')?curId:Date.now(),name,
+  const editing=$('w-title').textContent.startsWith('Editar');
+  const t={id:editing?curId:Date.now(),name,
     cine:$('m-cine').value.trim()||'Cine Local',count:$('m-count').value||'1',hall:$('m-hall').value||'-',
     seats:$('m-seats').value.trim()||'-',poster:wiz.poster,qr:wiz.qr};
   const i=tickets.findIndex(x=>x.id===t.id);
   if(i>=0)tickets[i]=t;else tickets.push(t);
   if(!persist())return;
-  closeWizard();closeDetail();render();toast('Entrada guardada ✓');
+  saving=true;
+  closeWizard();closeDetail();
+  render(t.id,true);                                   // la tarjeta nueva queda oculta ("fantasma")
+  const card=document.querySelector(`.card[data-id="${t.id}"]`);
+  card.scrollIntoView({block:'center'});
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  try{
+    if(matchMedia('(prefers-reduced-motion:reduce)').matches)throw 0;
+    const R=card.getBoundingClientRect();
+    const f=document.createElement('div');f.className='fly';
+    f.innerHTML=t.poster?`<img src="${esc(t.poster)}" alt="">`:'<div class="noimg" style="z-index:0">🎬</div>';
+    document.body.appendChild(f);
+    const W=Math.min(innerWidth*.56,240),H=W*1.5,L=(innerWidth-W)/2,T=(innerHeight-H)/2-10;
+    Object.assign(f.style,{left:L+'px',top:T+'px',width:W+'px',height:H+'px'});
+    await f.animate([{transform:'scale(.5) rotate(-4deg)',opacity:0},{transform:'scale(1.05)',opacity:1,offset:.7},{transform:'scale(1)',opacity:1}],
+      {duration:560,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'}).finished;
+    await sleep(260);
+    await f.animate([{left:L+'px',top:T+'px',width:W+'px',height:H+'px',borderRadius:'22px'},
+                     {left:R.left+'px',top:R.top+'px',width:R.width+'px',height:R.height+'px',borderRadius:'26px'}],
+      {duration:720,easing:'cubic-bezier(.65,0,.2,1)',fill:'forwards'}).finished;
+    card.classList.remove('ghost');card.classList.add('reveal');
+    requestAnimationFrame(()=>f.remove());
+  }catch{card.classList.remove('ghost')}
+  saving=false;toast('Entrada guardada ✓');
 }
 
 /* ---------- PWA ---------- */
