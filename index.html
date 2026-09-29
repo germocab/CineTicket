@@ -335,6 +335,56 @@ main{padding-bottom:calc(var(--bot) + 120px)}
 .sum span{display:block;margin-top:3px;color:var(--dim);font-size:.82rem}
 [data-theme=light] .w-bg{filter:blur(60px) saturate(1.4) brightness(1.15);opacity:0}
 [data-theme=light] .w-bg.on{opacity:.55}
+
+/* ===== v3.0: Organize + vista 2x2 ===== */
+.mi em{margin-left:auto;font-style:normal;font-size:.8rem;font-weight:600;color:var(--dim)}
+.mi .chev{width:16px;height:16px;margin-left:2px;color:var(--dim);transition:transform .4s var(--spring)}
+.mi[aria-expanded=true] .chev{transform:rotate(90deg)}
+.org-sub{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s var(--ease)}
+.org-sub.on{grid-template-rows:1fr}
+.org-sub>div{overflow:hidden;min-height:0}
+.mi.sub{padding:11px 14px 11px 46px;font-size:.92rem;font-weight:500}
+.mi.sub .ck{margin-left:auto;width:18px;height:18px;opacity:0;color:#30d158;transform:scale(.6);transition:opacity .2s,transform .4s var(--spring)}
+.mi.sub.act{font-weight:700}
+.mi.sub.act .ck{opacity:1;transform:none}
+.sw{flex:none;margin-left:auto;width:42px;height:26px;border-radius:99px;background:rgba(127,127,127,.38);position:relative;transition:background .3s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .4s var(--spring)}
+#mi-view.on .sw{background:#30d158}
+#mi-view.on .sw::after{transform:translateX(16px)}
+#menu{min-width:244px}
+
+/* Vista 2x2: solo el póster vertical */
+main.g2{grid-template-columns:1fr 1fr;gap:14px}
+.g2 .card{aspect-ratio:2/3;border-radius:24px;animation-delay:calc(var(--i)*45ms)}
+.g2 .card>img{object-position:center}
+.g2 .card:active{transform:scale(.95)}
+.g2 .grp{grid-column:1/-1}
+.g2 .noimg{align-content:center;gap:10px;padding:14px;text-align:center}
+.noimg small{font-size:.82rem;font-weight:700;line-height:1.2;color:rgba(255,255,255,.85);word-break:break-word}
+
+/* ===== v3.1: Cinemas ===== */
+.s-title+.s-note{margin:-14px 6px 24px}
+.cin-list{display:flex;flex-direction:column;gap:10px}
+.cin{display:flex;align-items:center;gap:12px;padding:12px 10px 12px 14px;border-radius:20px;animation:imgIn .5s var(--spring) backwards;animation-delay:calc(var(--i)*50ms)}
+.cin .pin{flex:none;width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+.cin .pin svg,.cin .ib svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+.cin .ci{flex:1;min-width:0}
+.cin b{display:block;font-size:1rem;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cin .ci span{display:block;margin-top:2px;color:var(--dim);font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cin .ib{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--dim);transition:transform .3s var(--spring),background .2s}
+.cin .ib:active{transform:scale(.86);background:var(--glass-2)}
+.cin .ib.del{color:#ff6961}
+.cin-empty{text-align:center;color:var(--dim);padding:26px 20px;font-size:.92rem;line-height:1.5}
+#cinemas{position:fixed;inset:0;z-index:105;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);visibility:hidden;opacity:0;transform:translateY(6%) scale(.96);
+  transition:opacity .35s var(--ease),transform .5s var(--spring),visibility 0s .5s}
+#cinemas.on{visibility:visible;opacity:1;transform:none;transition-delay:0s}
+[data-theme=light] #cinemas input[type=text]{background:rgba(0,0,0,.05)}
+[data-theme=light] #cinemas input:focus{background:rgba(0,0,0,.07);border-color:rgba(0,0,0,.28)}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 0 4px}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;padding:9px 15px;border-radius:99px;font-size:.88rem;font-weight:600;background:var(--glass);border:1px solid var(--stroke);transition:transform .3s var(--spring),background .2s,color .2s}
+.chips button:active{transform:scale(.92)}
+.chips button.on{background:var(--text);color:var(--bg);border-color:transparent}
 </style>
 </head>
 <body>
@@ -359,6 +409,14 @@ main{padding-bottom:calc(var(--bot) + 120px)}
 <!-- Menú de opciones -->
 <div id="menu-bg" onclick="closeMenu()"></div>
 <div id="menu" class="glass" role="menu">
+  <button class="mi" role="menuitem" id="mi-org" aria-expanded="false" onclick="toggleOrg()"><svg viewBox="0 0 24 24"><path d="M4 7h10M4 12h7M4 17h4M18 8v9M15 14l3 3 3-3"/></svg><span>Organize</span><em id="org-val">Date</em><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+  <div class="org-sub" id="org-sub"><div>
+    <button class="mi sub" role="menuitemradio" data-sort="date" onclick="setSort('date')"><span>By date</span><svg class="ck" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></button>
+    <button class="mi sub" role="menuitemradio" data-sort="alpha" onclick="setSort('alpha')"><span>Alphabetic</span><svg class="ck" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></button>
+  </div></div>
+  <button class="mi" role="menuitemcheckbox" id="mi-view" aria-checked="false" onclick="toggleView()"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg><span>2x2 view</span><i class="sw"></i></button>
+  <div class="mi-sep"></div>
+  <button class="mi" role="menuitem" onclick="openCinemas()"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 005 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>Cinemas</span></button>
   <button class="mi" role="menuitem" onclick="toggleTheme()"><svg id="mi-theme-ico" viewBox="0 0 24 24"></svg><span id="mi-theme-lbl">Light mode</span></button>
   <div class="mi-sep"></div>
   <button class="mi" role="menuitem" onclick="openSettings()"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span>Settings</span></button>
@@ -371,6 +429,28 @@ main{padding-bottom:calc(var(--bot) + 120px)}
 <!-- Botón flotante: agregar película -->
 <button class="fab" onclick="openWizard()" aria-label="Add movie"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
 
+<!-- Cinemas -->
+<section id="cinemas" aria-label="Cinemas">
+  <button class="back icon-btn glass" onclick="closeCinemas()" aria-label="Close">✕</button>
+  <div class="s-wrap">
+    <h2 class="s-title">Cinemas</h2>
+    <p class="s-note">Save your favorite movie theaters and pick them with one tap when you add a ticket.</p>
+    <div class="s-group">
+      <div class="s-label" id="cin-form-lbl">Add a cinema</div>
+      <div class="s-card glass">
+        <input type="text" id="cin-name" placeholder="Cinema name" autocomplete="off" onkeydown="if(event.key==='Enter')submitCinema()">
+        <input type="text" id="cin-place" placeholder="Location (optional)" autocomplete="off" onkeydown="if(event.key==='Enter')submitCinema()">
+        <button class="btn main s-btn" onclick="submitCinema()"><span id="cin-btn-lbl">Add cinema</span></button>
+        <button class="cancel" id="cin-cancel" style="display:none" onclick="resetCinForm()">Cancel</button>
+      </div>
+    </div>
+    <div class="s-group">
+      <div class="s-label">My cinemas · <span id="cin-count">0</span></div>
+      <div class="cin-list" id="cin-list"></div>
+    </div>
+  </div>
+</section>
+
 <!-- Ajustes -->
 <section id="settings" aria-label="Settings">
   <button class="back icon-btn glass" onclick="closeSettings()" aria-label="Close">✕</button>
@@ -380,7 +460,7 @@ main{padding-bottom:calc(var(--bot) + 120px)}
       <div class="s-label">Catalog</div>
       <div class="s-card glass">
         <div class="s-stats"><div><b id="st-total">0</b><span>Tickets</span></div><div><b id="st-watched">0</b><span>Watched</span></div></div>
-        <p class="s-note">Export your catalog as a file, posters and QR codes included, and import it on another device to pick up where you left off.</p>
+        <p class="s-note">Export your catalog as a file, posters, QR codes and saved cinemas included, and import it on another device to pick up where you left off.</p>
         <button class="btn main s-btn" id="exp-btn" onclick="exportCatalog()"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span id="exp-lbl">Export catalog</span></button>
         <button class="btn glass s-btn" onclick="$('imp-file').click()"><svg viewBox="0 0 24 24"><path d="M12 16V5M7 9l5-5 5 5M5 20h14"/></svg><span>Import catalog</span></button>
         <input type="file" id="imp-file" hidden accept=".json,application/json" onchange="onImportFile(this)">
@@ -454,7 +534,9 @@ main{padding-bottom:calc(var(--bot) + 120px)}
       <div class="lblrow">Fecha de la función</div>
       <div class="row"><input type="date" id="m-date" aria-label="Fecha de la función"><input type="time" id="m-time" class="tm" aria-label="Hora"></div>
       <div class="lblrow">Cine</div>
-      <input type="text" id="m-cine" placeholder="Cine">
+      <input type="text" id="m-cine" placeholder="Cine" oninput="renderCineChips()">
+      <div class="chips" id="cine-chips" style="display:none"></div>
+      <button class="linkbtn" id="cine-save" style="display:none" onclick="saveTypedCinema()">＋ Save to my cinemas</button>
       <div class="lblrow">Personas y sala</div>
       <div class="row"><input type="number" id="m-count" placeholder="Personas" inputmode="numeric"><input type="number" id="m-hall" placeholder="Sala" inputmode="numeric"></div>
       <div class="lblrow">Butacas</div>
@@ -504,11 +586,12 @@ function syncTabs(){$('tabs').dataset.tab=tab;document.querySelectorAll('.tabs b
 function setTab(t){if(t===tab)return;tab=t;syncTabs();scrollTo({top:0});render()}
 function clearQ(){$('q').value='';render(null,true);$('q').focus()}
 function render(ghostId,still){
-  const l=$('list');l.innerHTML='';
+  const l=$('list');l.innerHTML='';const grid=viewMode==='grid';l.classList.toggle('g2',grid);
   const qv=$('q').value.trim(),q=norm(qv);
   let list=tickets.filter(t=>!!t.watched===(tab==='watched'));
   if(q)list=list.filter(t=>norm([t.name,t.cine,t.seats,t.hall,fmtWhen(t.when),dayLabel(t)].join(' ')).includes(q));
   if(tab==='watched')list.sort((a,b)=>dayTs(b)-dayTs(a)||(b.watchedAt||0)-(a.watchedAt||0));
+  else if(sortMode==='alpha')list.sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base',numeric:true}));
   else list.sort((a,b)=>{const x=a.when||'9',y=b.when||'9';return x<y?-1:x>y?1:0});
   const em=$('empty');em.style.display=list.length?'none':'block';
   if(!list.length){
@@ -522,8 +605,8 @@ function render(ghostId,still){
     if(tab==='watched'){const g=dayLabel(t);if(g!==last){last=g;const h=document.createElement('h2');h.className='grp'+(still?' noanim':'');h.style.setProperty('--i',n++);h.textContent=g;l.appendChild(h)}}
     const c=document.createElement('div');c.className='card'+(still?' noanim':'')+(t.id===ghostId?' ghost':'')+(t.watched?' seen':'');
     c.style.setProperty('--i',n++);c.dataset.id=t.id;c.onclick=()=>openDetail(t.id);
-    c.innerHTML=(t.poster?`<img src="${esc(t.poster)}" alt="" loading="lazy">`:'<div class="noimg">🎬</div>')+
-      `<div class="meta glass"><div><div class="t">${esc(t.name)}</div><div class="s">${esc(t.cine)}${t.when?' · '+esc(fmtWhen(t.when)):''}</div></div><span class="chip">${t.watched?'✓ '+fmtD(dayTs(t)):'Sala '+esc(t.hall)}</span></div>`;
+    c.innerHTML=(t.poster?`<img src="${esc(t.poster)}" alt="" loading="lazy">`:(grid?`<div class="noimg">🎬<small>${esc(t.name)}</small></div>`:'<div class="noimg">🎬</div>'))+(grid?'':
+      `<div class="meta glass"><div><div class="t">${esc(t.name)}</div><div class="s">${esc(t.cine)}${t.when?' · '+esc(fmtWhen(t.when)):''}</div></div><span class="chip">${t.watched?'✓ '+fmtD(dayTs(t)):'Sala '+esc(t.hall)}</span></div>`);
     l.appendChild(c);
   });
   if(!holdCounts)updateCounts();
@@ -570,7 +653,7 @@ function openWizard(edit){
     setPrev('p-prev',t.poster);setPrev('q-prev',t.qr);$('w-title').textContent='Edit ticket';
     $('p-status').textContent='Cambia el nombre para buscar otro póster.';
   }
-  go(1);$('wiz').classList.add('on');document.body.style.overflow='hidden';
+  renderCineChips();go(1);$('wiz').classList.add('on');document.body.style.overflow='hidden';
   if(!edit)setTimeout(()=>$('m-name').focus({preventScroll:true}),650);
 }
 let wizEditing=false,wStep=1;
@@ -721,7 +804,7 @@ async function save(){
       {duration:560,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'}).finished;
     await sleep(260);
     await f.animate([{left:L+'px',top:T+'px',width:W+'px',height:H+'px',borderRadius:'22px'},
-                     {left:R.left+'px',top:R.top+'px',width:R.width+'px',height:R.height+'px',borderRadius:'26px'}],
+                     {left:R.left+'px',top:R.top+'px',width:R.width+'px',height:R.height+'px',borderRadius:getComputedStyle(card).borderRadius}],
       {duration:720,easing:'cubic-bezier(.65,0,.2,1)',fill:'forwards'}).finished;
     card.classList.remove('ghost');card.classList.add('reveal');
     requestAnimationFrame(()=>f.remove());
@@ -778,10 +861,10 @@ async function installApp(){if(!deferred)return;deferred.prompt();await deferred
 addEventListener('appinstalled',()=>{$('mi-install-wrap').style.display='none';toast('CineTicket instalada 🎬')});
 addEventListener('offline',()=>toast('Sin conexión · tus entradas siguen disponibles'));
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
-addEventListener('keydown',e=>{if(e.key==='Escape'){closeMenu();closeSearch();closeSettings();closeQR();closeWizard();closeDetail()}});
+addEventListener('keydown',e=>{if(e.key==='Escape'){closeMenu();closeSearch();closeCinemas();closeSettings();closeQR();closeWizard();closeDetail()}});
 
 /* ---------- v2.7: Tema, menú y ajustes ---------- */
-const APP_VERSION='2.8',THEME_KEY='cineticket_theme';
+const APP_VERSION='3.1',THEME_KEY='cineticket_theme';
 let theme=document.documentElement.dataset.theme==='light'?'light':'dark';
 const ICO_SUN='<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
 const ICO_MOON='<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>';
@@ -792,7 +875,7 @@ function applyTheme(){
   $('mi-theme-ico').innerHTML=theme==='light'?ICO_MOON:ICO_SUN;
 }
 function toggleTheme(){theme=theme==='light'?'dark':'light';try{localStorage.setItem(THEME_KEY,theme)}catch{}applyTheme();closeMenu()}
-function openMenu(){$('menu').classList.add('on');$('menu-bg').classList.add('on');$('opt-btn').setAttribute('aria-expanded','true')}
+function openMenu(){$('org-sub').classList.remove('on');$('mi-org').setAttribute('aria-expanded','false');$('menu').classList.add('on');$('menu-bg').classList.add('on');$('opt-btn').setAttribute('aria-expanded','true')}
 function closeMenu(){$('menu').classList.remove('on');$('menu-bg').classList.remove('on');$('opt-btn').setAttribute('aria-expanded','false')}
 function toggleMenu(){$('menu').classList.contains('on')?closeMenu():openMenu()}
 
@@ -811,7 +894,7 @@ function closeSettings(){if(!$('settings').classList.contains('on'))return;$('se
 
 /* ---------- Exportar / Importar catálogo ---------- */
 async function exportCatalog(){
-  if(!tickets.length)return toast('Nothing to export yet');
+  if(!tickets.length&&!cinemas.length)return toast('Nothing to export yet');
   const b=$('exp-btn'),l=$('exp-lbl');b.disabled=true;l.textContent='Preparing…';
   try{
     // los pósters que solo existen como URL se incrustan para que el archivo funcione sin internet
@@ -821,11 +904,11 @@ async function exportCatalog(){
       }
       return t;
     }));
-    const data={app:'CineTicket',format:1,version:APP_VERSION,exportedAt:new Date().toISOString(),tickets:list};
+    const data={app:'CineTicket',format:1,version:APP_VERSION,exportedAt:new Date().toISOString(),tickets:list,cinemas};
     const url=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));
     const a=document.createElement('a');a.href=url;a.download=`cineticket-catalog-${isoDay(Date.now())}.json`;
     document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
-    toast(`Catalog exported · ${list.length} ticket${list.length===1?'':'s'}`);
+    toast(`Catalog exported · ${list.length} ticket${list.length===1?'':'s'}`+(cinemas.length?` · ${cinemas.length} cinema${cinemas.length===1?'':'s'}`:''));
   }catch{toast('Export failed')}
   finally{b.disabled=false;l.textContent='Export catalog'}
 }
@@ -845,35 +928,141 @@ async function onImportFile(inp){
   const f=inp.files[0];inp.value='';if(!f)return;
   try{
     const raw=JSON.parse(await f.text());
-    const arr=Array.isArray(raw)?raw:raw&&Array.isArray(raw.tickets)?raw.tickets:null;
-    if(!arr)throw 0;
+    const arr=Array.isArray(raw)?raw:raw&&Array.isArray(raw.tickets)?raw.tickets:[];
+    const cin=raw&&Array.isArray(raw.cinemas)?cleanCinemas(raw.cinemas):[];
+    if(!Array.isArray(raw)&&!(raw&&(Array.isArray(raw.tickets)||Array.isArray(raw.cinemas))))throw 0;
     const seen=new Set(),list=[];
     arr.forEach((x,i)=>{const t=cleanTicket(x,i);if(t&&!seen.has(t.id)){seen.add(t.id);list.push(t)}});
-    if(!list.length)throw 0;
+    if(!list.length&&!cin.length)throw 0;
     const have=new Set(tickets.map(t=>t.id)),fresh=list.filter(t=>!have.has(t.id)).length;
-    pending={list,fresh};
-    $('imp-msg').innerHTML=`<b>${list.length} ticket${list.length===1?'':'s'}</b> found in “${esc(f.name)}”<br><span style="color:var(--dim)">${fresh} new · ${list.length-fresh} already on this device</span>`;
-    $('imp-merge').textContent=fresh?`Merge (+${fresh})`:'Merge';
+    const hn=new Set(cinemas.map(c=>norm(c.name))),freshC=cin.filter(c=>!hn.has(norm(c.name))).length;
+    pending={list,fresh,cin,freshC};
+    const pl=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
+    let m='';
+    if(list.length)m+=`<b>${pl(list.length,'ticket')}</b> · ${fresh} new, ${list.length-fresh} already here<br>`;
+    if(cin.length)m+=`<b>${pl(cin.length,'cinema')}</b> · ${freshC} new, ${cin.length-freshC} already here<br>`;
+    $('imp-msg').innerHTML=`Found in “${esc(f.name)}”<br>${m}`;
+    $('imp-merge').textContent=fresh+freshC?`Merge (+${fresh+freshC})`:'Merge';
     $('imp-panel').classList.add('on');
   }catch{cancelImport();toast('That file is not a valid catalog')}
 }
 function cancelImport(){pending=null;$('imp-panel').classList.remove('on')}
 function applyImport(mode){
   if(!pending)return;
-  const{list,fresh}=pending,backup=tickets;
+  const{list,fresh,cin,freshC}=pending,backT=tickets,backC=cinemas;
   if(mode==='replace'){
-    if(tickets.length&&!confirm(`Replace your ${tickets.length} current ticket${tickets.length===1?'':'s'} with the ${list.length} from the file?`))return;
-    tickets=list;
+    if(list.length&&tickets.length&&!confirm(`Replace your ${tickets.length} current ticket${tickets.length===1?'':'s'} with the ${list.length} from the file?`))return;
+    if(list.length)tickets=list;
+    if(cin.length)cinemas=cin;
   }else{
-    if(!fresh){cancelImport();return toast('Nothing new to import')}
+    if(!fresh&&!freshC){cancelImport();return toast('Nothing new to import')}
     const have=new Set(tickets.map(t=>t.id));tickets=tickets.concat(list.filter(t=>!have.has(t.id)));
+    const hn=new Set(cinemas.map(c=>norm(c.name))),ids=new Set(cinemas.map(c=>c.id));
+    cin.forEach(c=>{if(hn.has(norm(c.name)))return;while(ids.has(c.id))c.id++;ids.add(c.id);cinemas=cinemas.concat(c)});
   }
-  if(!persist()){tickets=backup;return}
+  if(!persist()||!persistCinemas()){tickets=backT;cinemas=backC;persist();persistCinemas();return}
   cancelImport();tab='tickets';syncTabs();$('q').value='';render(null,true);refreshStats();
-  toast(mode==='replace'?`Catalog replaced · ${list.length} ticket${list.length===1?'':'s'}`:`${fresh} ticket${fresh===1?'':'s'} added`);
+  const n=mode==='replace'?list.length:fresh,pl=(k,w)=>`${k} ${w}${k===1?'':'s'}`;
+  toast((mode==='replace'?'Catalog replaced · ':'')+[n?pl(n,'ticket')+(mode==='replace'?'':' added'):'',(mode==='replace'?cin.length:freshC)?pl(mode==='replace'?cin.length:freshC,'cinema')+(mode==='replace'?'':' added'):''].filter(Boolean).join(' · '));
 }
 
-$('app-ver').textContent=APP_VERSION;applyTheme();
+/* ---------- v3.0: Organize + vista 2x2 ---------- */
+const SORT_KEY='cineticket_sort',VIEW_KEY='cineticket_view';
+let sortMode='date',viewMode='cards';
+try{sortMode=localStorage.getItem(SORT_KEY)==='alpha'?'alpha':'date';viewMode=localStorage.getItem(VIEW_KEY)==='grid'?'grid':'cards'}catch{}
+function syncOptions(){
+  $('org-val').textContent=sortMode==='alpha'?'A–Z':'Date';
+  document.querySelectorAll('.mi.sub').forEach(b=>{const on=b.dataset.sort===sortMode;b.classList.toggle('act',on);b.setAttribute('aria-checked',on)});
+  $('mi-view').classList.toggle('on',viewMode==='grid');$('mi-view').setAttribute('aria-checked',viewMode==='grid');
+}
+function toggleOrg(){const o=$('org-sub').classList.toggle('on');$('mi-org').setAttribute('aria-expanded',o)}
+function setSort(m){
+  sortMode=m;try{localStorage.setItem(SORT_KEY,m)}catch{}syncOptions();closeMenu();
+  if(tab==='tickets'){scrollTo({top:0});render()}
+  toast('Your Tickets · '+(m==='alpha'?'Alphabetic order':'By date'));
+}
+function toggleView(){
+  viewMode=viewMode==='grid'?'cards':'grid';try{localStorage.setItem(VIEW_KEY,viewMode)}catch{}syncOptions();
+  setTimeout(closeMenu,260);scrollTo({top:0});render();
+}
+/* ---------- v3.1: Cinemas ---------- */
+const CIN_KEY='cineticket_cinemas';
+let cinemas=[],cinEditId=null;
+try{const c=JSON.parse(localStorage.getItem(CIN_KEY));if(Array.isArray(c))cinemas=c}catch{}
+const persistCinemas=()=>{try{localStorage.setItem(CIN_KEY,JSON.stringify(cinemas));return true}catch{toast('Almacenamiento lleno');return false}};
+const byName=(a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base',numeric:true});
+function cleanCinemas(arr){
+  const seen=new Set(),out=[];
+  arr.forEach((x,i)=>{
+    if(!x||typeof x.name!=='string'||!x.name.trim())return;
+    const k=norm(x.name.trim());if(seen.has(k))return;seen.add(k);
+    let id=Number(x.id);if(!Number.isFinite(id)||id<=0)id=Date.now()+i;
+    out.push({id,name:x.name.trim().slice(0,80),place:typeof x.place==='string'?x.place.trim().slice(0,120):''});
+  });
+  return out;
+}
+function addCinema(name,place){
+  name=String(name||'').trim();if(!name){toast('Write the cinema name');return false}
+  if(cinemas.some(c=>norm(c.name)===norm(name))){toast('That cinema is already saved');return false}
+  cinemas.push({id:Date.now(),name:name.slice(0,80),place:String(place||'').trim().slice(0,120)});
+  if(!persistCinemas()){cinemas.pop();return false}
+  toast('Cinema saved ✓');return true;
+}
+const CIN_ICO={pin:'<svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 005 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
+  edit:'<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></svg>',
+  del:'<svg viewBox="0 0 24 24"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></svg>'};
+function renderCinemas(){
+  $('cin-count').textContent=cinemas.length;
+  const l=$('cin-list');
+  if(!cinemas.length){l.innerHTML='<div class="cin-empty glass" style="border-radius:20px">No cinemas yet.<br>Add your first one above.</div>';return}
+  l.innerHTML=[...cinemas].sort(byName).map((c,i)=>{
+    const n=tickets.filter(t=>norm(t.cine)===norm(c.name)).length;
+    const sub=[c.place,n?`${n} ticket${n===1?'':'s'}`:''].filter(Boolean).join(' · ');
+    return `<div class="cin glass" style="--i:${i}"><div class="pin">${CIN_ICO.pin}</div><div class="ci"><b>${esc(c.name)}</b>${sub?`<span>${esc(sub)}</span>`:''}</div>`+
+      `<button class="ib" onclick="editCinema(${c.id})" aria-label="Edit">${CIN_ICO.edit}</button><button class="ib del" onclick="delCinema(${c.id})" aria-label="Delete">${CIN_ICO.del}</button></div>`;
+  }).join('');
+}
+function resetCinForm(){
+  cinEditId=null;$('cin-name').value='';$('cin-place').value='';
+  $('cin-form-lbl').textContent='Add a cinema';$('cin-btn-lbl').textContent='Add cinema';$('cin-cancel').style.display='none';
+}
+function submitCinema(){
+  const name=$('cin-name').value.trim(),place=$('cin-place').value.trim();
+  if(!name){$('cin-name').focus();return toast('Write the cinema name')}
+  if(cinEditId){
+    if(cinemas.some(c=>c.id!==cinEditId&&norm(c.name)===norm(name)))return toast('That cinema is already saved');
+    const c=cinemas.find(x=>x.id===cinEditId),old={...c};c.name=name.slice(0,80);c.place=place.slice(0,120);
+    if(!persistCinemas()){Object.assign(c,old);return}
+    toast('Cinema updated ✓');
+  }else if(!addCinema(name,place))return;
+  resetCinForm();renderCinemas();
+}
+function editCinema(id){
+  const c=cinemas.find(x=>x.id===id);if(!c)return;cinEditId=id;
+  $('cin-name').value=c.name;$('cin-place').value=c.place||'';
+  $('cin-form-lbl').textContent='Edit cinema';$('cin-btn-lbl').textContent='Save changes';$('cin-cancel').style.display='block';
+  $('cinemas').scrollTo({top:0,behavior:'smooth'});$('cin-name').focus({preventScroll:true});
+}
+function delCinema(id){
+  const c=cinemas.find(x=>x.id===id);if(!c||!confirm(`Remove “${c.name}” from your cinemas? Existing tickets keep their cinema name.`))return;
+  cinemas=cinemas.filter(x=>x.id!==id);persistCinemas();if(cinEditId===id)resetCinForm();renderCinemas();toast('Cinema removed');
+}
+function openCinemas(){closeMenu();resetCinForm();renderCinemas();$('cinemas').scrollTop=0;$('cinemas').classList.add('on');document.body.style.overflow='hidden'}
+function closeCinemas(){if(!$('cinemas').classList.contains('on'))return;$('cinemas').classList.remove('on');document.activeElement?.blur();document.body.style.overflow=''}
+/* selector de cines en "Nueva entrada" */
+function renderCineChips(){
+  const typed=$('m-cine').value.trim(),v=norm(typed),box=$('cine-chips');
+  box.style.display=cinemas.length?'flex':'none';
+  box.innerHTML=[...cinemas].sort(byName).map(c=>`<button type="button" class="${norm(c.name)===v?'on':''}" onclick="pickCinema(${c.id})">${esc(c.name)}</button>`).join('');
+  $('cine-save').style.display=typed&&!cinemas.some(c=>norm(c.name)===v)?'':'none';
+}
+function pickCinema(id){
+  const c=cinemas.find(x=>x.id===id);if(!c)return;
+  $('m-cine').value=norm($('m-cine').value.trim())===norm(c.name)?'':c.name;renderCineChips();
+}
+function saveTypedCinema(){if(addCinema($('m-cine').value,''))renderCineChips()}
+
+$('app-ver').textContent=APP_VERSION;applyTheme();syncOptions();
 render();
 </script>
 </body>
