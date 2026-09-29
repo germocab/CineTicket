@@ -1,4 +1,4 @@
-const VERSION = 'cineticket-v2.1.0';
+const VERSION = 'cineticket-v2.3.0';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
   './favicon_io/android-chrome-192x192.png', './favicon_io/android-chrome-512x512.png',
   './favicon_io/apple-touch-icon.png', './favicon_io/favicon-32x32.png',
