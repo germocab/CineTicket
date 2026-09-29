@@ -204,6 +204,10 @@ input::placeholder{color:rgba(235,235,245,.35)}
 .fly.yes .stamp *{stroke:#30d158}.fly.no .stamp *{stroke:#ff9f0a}
 .fly.yes .xx,.fly.no .ck{display:none}
 @keyframes draw{to{stroke-dashoffset:0}}
+input[type=date],input[type=time]{width:100%;min-width:0;padding:17px 18px;border-radius:16px;border:1px solid var(--stroke);background:rgba(255,255,255,.07);outline:0;font-size:1rem;color-scheme:dark;transition:border-color .25s,background .25s,box-shadow .25s}
+input[type=date]:focus,input[type=time]:focus{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.11);box-shadow:0 0 0 4px rgba(255,69,58,.18)}
+.row .tm{flex:.7}
+.lblrow{color:var(--dim);font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin:2px 2px -4px}
 /* Toast */
 #toast{position:fixed;left:50%;bottom:calc(var(--bot) + 30px);z-index:400;transform:translate(-50%,30px);padding:12px 20px;border-radius:99px;font-size:.9rem;font-weight:600;opacity:0;pointer-events:none;transition:.45s var(--spring);white-space:nowrap}
 #toast.on{opacity:1;transform:translate(-50%,0)}
@@ -243,6 +247,7 @@ input::placeholder{color:rgba(235,235,245,.35)}
     <h2 class="d-title" id="d-title"></h2>
     <div class="stagger">
       <div class="grid">
+        <div class="pill glass wide" id="d-when-pill"><span>Función</span><div id="d-when"></div></div>
         <div class="pill glass wide"><span>Cine</span><div id="d-cine"></div></div>
         <div class="pill glass"><span>Sala</span><div id="d-hall"></div></div>
         <div class="pill glass"><span>Personas</span><div id="d-count"></div></div>
@@ -280,6 +285,8 @@ input::placeholder{color:rgba(235,235,245,.35)}
     </div>
 
     <div class="step" id="s2">
+      <div class="lblrow">Fecha de la función</div>
+      <div class="row"><input type="date" id="m-date" aria-label="Fecha de la función"><input type="time" id="m-time" class="tm" aria-label="Hora"></div>
       <input type="text" id="m-cine" placeholder="Cine">
       <div class="row"><input type="number" id="m-count" placeholder="Personas" inputmode="numeric"><input type="number" id="m-hall" placeholder="Sala" inputmode="numeric"></div>
       <input type="text" id="m-seats" placeholder="Butacas (ej. F7, F8)">
@@ -315,6 +322,13 @@ const LBL={tickets:'Your Tickets',watched:'Watched',scanned:'Scanned',notScanned
 let tab='tickets',holdCounts=false,moving=false;
 const norm=x=>String(x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 const fmtD=ts=>new Date(ts).toLocaleDateString('es',{day:'numeric',month:'short'}).replace('.','');
+const fmtWhen=iso=>{if(!iso)return'';const d=new Date(iso);if(isNaN(d))return'';const o={weekday:'short',day:'numeric',month:'short'};
+  if(!/T00:00$/.test(iso)){o.hour='2-digit';o.minute='2-digit'}return d.toLocaleString('es',o).replace(/\./g,'')};
+const dayTs=t=>t.when?new Date(t.when).getTime():(t.watchedAt||0);
+const isoDay=ts=>{const d=new Date(ts),p=n=>String(n).padStart(2,'0');return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`};
+function dayLabel(t){const ts=dayTs(t);if(!ts)return'Sin fecha';const d=new Date(ts),k=isoDay(ts),now=Date.now();
+  const pre=k===isoDay(now)?'Hoy · ':k===isoDay(now-864e5)?'Ayer · ':'';
+  const s=d.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long',year:'numeric'});return pre+s.charAt(0).toUpperCase()+s.slice(1)}
 const monthLabel=ts=>{if(!ts)return'Sin fecha';const m=new Date(ts).toLocaleDateString('es',{month:'long',year:'numeric'});return m.charAt(0).toUpperCase()+m.slice(1)};
 function updateCounts(){$('c-tickets').textContent=tickets.filter(t=>!t.watched).length;$('c-watched').textContent=tickets.filter(t=>t.watched).length}
 function syncTabs(){$('tabs').dataset.tab=tab;document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab))}
@@ -324,8 +338,9 @@ function render(ghostId,still){
   const l=$('list');l.innerHTML='';
   const qv=$('q').value.trim(),q=norm(qv);$('q-x').style.display=qv?'':'none';
   let list=tickets.filter(t=>!!t.watched===(tab==='watched'));
-  if(q)list=list.filter(t=>norm([t.name,t.cine,t.seats,t.hall].join(' ')).includes(q));
-  if(tab==='watched')list.sort((a,b)=>(b.watchedAt||0)-(a.watchedAt||0));
+  if(q)list=list.filter(t=>norm([t.name,t.cine,t.seats,t.hall,fmtWhen(t.when),dayLabel(t)].join(' ')).includes(q));
+  if(tab==='watched')list.sort((a,b)=>dayTs(b)-dayTs(a)||(b.watchedAt||0)-(a.watchedAt||0));
+  else list.sort((a,b)=>{const x=a.when||'9',y=b.when||'9';return x<y?-1:x>y?1:0});
   const em=$('empty');em.style.display=list.length?'none':'block';
   if(!list.length){
     const [i,h,p]=qv?['🔍','Sin resultados',`No hay coincidencias para “${esc(qv)}”.`]:
@@ -335,11 +350,11 @@ function render(ghostId,still){
   }
   let n=0,last='';
   list.forEach(t=>{
-    if(tab==='watched'){const g=monthLabel(t.watchedAt);if(g!==last){last=g;const h=document.createElement('h2');h.className='grp'+(still?' noanim':'');h.style.setProperty('--i',n++);h.textContent=g;l.appendChild(h)}}
+    if(tab==='watched'){const g=dayLabel(t);if(g!==last){last=g;const h=document.createElement('h2');h.className='grp'+(still?' noanim':'');h.style.setProperty('--i',n++);h.textContent=g;l.appendChild(h)}}
     const c=document.createElement('div');c.className='card'+(still?' noanim':'')+(t.id===ghostId?' ghost':'')+(t.watched?' seen':'');
     c.style.setProperty('--i',n++);c.dataset.id=t.id;c.onclick=()=>openDetail(t.id);
     c.innerHTML=(t.poster?`<img src="${esc(t.poster)}" alt="" loading="lazy">`:'<div class="noimg">🎬</div>')+
-      `<div class="meta glass"><div><div class="t">${esc(t.name)}</div><div class="s">${esc(t.cine)}</div></div><span class="chip">${t.watched?'✓ '+fmtD(t.watchedAt):'Sala '+esc(t.hall)}</span></div>`;
+      `<div class="meta glass"><div><div class="t">${esc(t.name)}</div><div class="s">${esc(t.cine)}${t.when?' · '+esc(fmtWhen(t.when)):''}</div></div><span class="chip">${t.watched?'✓ '+fmtD(dayTs(t)):'Sala '+esc(t.hall)}</span></div>`;
     l.appendChild(c);
   });
   if(!holdCounts)updateCounts();
@@ -348,7 +363,7 @@ function render(ghostId,still){
 /* ---------- Detalle ---------- */
 function openDetail(id){
   const t=tickets.find(x=>x.id===id);if(!t)return;curId=id;
-  $('d-title').textContent=t.name;$('d-cine').textContent=t.cine;$('d-hall').textContent=t.hall;
+  $('d-title').textContent=t.name;$('d-cine').textContent=t.cine;$('d-when').textContent=fmtWhen(t.when);$('d-when-pill').style.display=t.when?'':'none';$('d-hall').textContent=t.hall;
   $('d-count').textContent=t.count;$('d-seats').textContent=t.seats;
   $('d-img').src=t.poster||'';$('d-bg').style.backgroundImage=t.poster?`url("${t.poster}")`:'none';
   $('d-qr').src=t.qr||'';$('d-ticket').classList.toggle('none',!t.qr);$('d-ticket').classList.toggle('used',!!t.watched);
@@ -372,7 +387,7 @@ function closeQR(){$('qr-full').classList.remove('on');wakeLock?.release().catch
 /* ---------- Asistente ---------- */
 function openWizard(edit){
   wiz={poster:null,qr:null};
-  ['m-name','m-cine','m-count','m-hall','m-seats'].forEach(i=>$(i).value='');
+  ['m-name','m-cine','m-count','m-hall','m-seats','m-date','m-time'].forEach(i=>$(i).value='');
   $('picker').innerHTML='';$('p-status').textContent='Escribe el nombre y buscaremos el póster automáticamente.';
   setPrev('p-prev',null);setPrev('q-prev',null);
   $('p-drop').classList.remove('ok');$('q-drop').classList.remove('ok');
@@ -382,6 +397,7 @@ function openWizard(edit){
     const t=tickets.find(x=>x.id===curId);wiz={poster:t.poster,qr:t.qr};
     $('m-name').value=t.name;$('m-cine').value=t.cine==='Cine Local'?'':t.cine;
     $('m-count').value=t.count;$('m-hall').value=t.hall==='-'?'':t.hall;$('m-seats').value=t.seats==='-'?'':t.seats;
+    if(t.when){$('m-date').value=t.when.slice(0,10);$('m-time').value=/T00:00$/.test(t.when)?'':t.when.slice(11,16)}
     setPrev('p-prev',t.poster);setPrev('q-prev',t.qr);$('w-title').textContent='Editar entrada';
     $('p-status').textContent='Cambia el nombre para buscar otro póster.';
   }
@@ -492,7 +508,7 @@ async function save(){
   const editing=$('w-title').textContent.startsWith('Editar');
   const t={id:editing?curId:Date.now(),name,
     cine:$('m-cine').value.trim()||'Cine Local',count:$('m-count').value||'1',hall:$('m-hall').value||'-',
-    seats:$('m-seats').value.trim()||'-',poster:wiz.poster,qr:wiz.qr};
+    seats:$('m-seats').value.trim()||'-',when:$('m-date').value?$('m-date').value+'T'+($('m-time').value||'00:00'):'',poster:wiz.poster,qr:wiz.qr};
   const i=tickets.findIndex(x=>x.id===t.id);
   if(i>=0){t.watched=tickets[i].watched||false;t.watchedAt=tickets[i].watchedAt||0}
   tab=t.watched?'watched':'tickets';syncTabs();$('q').value='';
