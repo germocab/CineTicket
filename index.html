@@ -39,7 +39,8 @@ button{cursor:pointer;border:0;background:none}
 .glass{background:var(--glass);border:1px solid var(--stroke);-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);box-shadow:0 8px 32px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.12)}
 
 /* Header */
-header{position:sticky;top:0;z-index:20;padding:calc(var(--top) + 18px) 22px 14px;display:flex;align-items:flex-end;justify-content:space-between;max-width:560px;margin:0 auto}
+header.top{position:sticky;top:0;z-index:20;padding:calc(var(--top) + 14px) 0 12px;background:linear-gradient(rgba(7,7,11,.82),rgba(7,7,11,.5));-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%)}
+.hin{max-width:560px;margin:0 auto;padding:0 22px}.row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .hdr-blur{position:fixed;top:0;left:0;right:0;height:calc(var(--top) + 70px);z-index:19;pointer-events:none;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);-webkit-mask-image:linear-gradient(#000 40%,transparent);mask-image:linear-gradient(#000 40%,transparent)}
 header small{display:block;color:var(--dim);font-size:.78rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
 h1{font-size:2.3rem;font-weight:800;letter-spacing:-.04em;line-height:1}
@@ -90,7 +91,7 @@ main{max-width:560px;margin:0 auto;padding:6px 18px calc(var(--bot) + 60px);disp
 .pill.wide{grid-column:1/-1}
 .pill span{display:block;color:var(--dim);font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
 .pill div{font-weight:700;font-size:1.05rem;word-break:break-word}
-.btns{display:flex;gap:10px;margin-bottom:22px}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px}
 .btn{flex:1;padding:15px;border-radius:18px;font-weight:700;font-size:.95rem;transition:transform .3s var(--spring)}
 .btn:active{transform:scale(.95)}
 .btn.danger{color:#ff6961}
@@ -161,6 +162,48 @@ input::placeholder{color:rgba(235,235,245,.35)}
 @keyframes settle{from{transform:scale(.965)}to{transform:none}}
 @keyframes metaIn{from{opacity:0;transform:translateY(14px)}}
 .linkbtn{align-self:flex-start;color:var(--dim);font-size:.8rem;text-decoration:underline;text-underline-offset:3px;padding:2px 0}
+/* Pestañas */
+.tabs{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:4px;border-radius:18px}
+.tabs .ind{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:14px;background:rgba(255,255,255,.16);box-shadow:0 4px 14px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.2);transition:transform .55s var(--spring)}
+.tabs[data-tab=watched] .ind{transform:translateX(100%)}
+.tabs button{position:relative;z-index:1;padding:11px 8px;font-weight:700;font-size:.95rem;color:var(--dim);display:flex;align-items:center;justify-content:center;gap:8px;transition:color .3s}
+.tabs button.on{color:var(--text)}
+.tabs em{font-style:normal;font-size:.72rem;min-width:20px;padding:2px 6px;border-radius:99px;background:rgba(255,255,255,.14)}
+.tabs button.bump{animation:pop .6s var(--spring)}.tabs button.bump em{background:#30d158;color:#04210c}
+@keyframes pop{40%{transform:scale(1.14)}}
+/* Buscador */
+.searchwrap{max-width:560px;margin:6px auto 16px;padding:0 18px}
+.search{display:flex;align-items:center;gap:10px;padding:0 14px;border-radius:18px;transition:box-shadow .3s}
+.search:focus-within{box-shadow:0 0 0 4px rgba(255,69,58,.18),0 8px 32px rgba(0,0,0,.35)}
+.search .mag{font-size:1.25rem;color:var(--dim);transform:scaleX(-1)}
+.search input[type=search]{border:0;background:none;padding:15px 0;border-radius:0;box-shadow:none}
+.search input[type=search]:focus{border:0;background:none;box-shadow:none}
+.search input::-webkit-search-cancel-button{display:none}
+.search button{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.16);font-size:.7rem;color:var(--dim)}
+.grp{font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin:12px 4px -6px;opacity:0;animation:rise .6s var(--ease) forwards;animation-delay:calc(var(--i)*70ms)}
+.grp.noanim{animation:none;opacity:1}
+.card.seen>img{filter:saturate(.5) brightness(.8)}
+.card.seen .chip{background:rgba(48,209,88,.22);color:#5df08a}
+/* Scanned */
+.scanbtn{flex:1 1 100%;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(120deg,#30d158,#3ee06a);color:#04210c;font-size:1.02rem;box-shadow:0 12px 26px -10px rgba(48,209,88,.8)}
+.scanbtn.undo{background:var(--glass);color:var(--text);box-shadow:none;border:1px solid var(--stroke);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.scanbtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.ticket.used img{opacity:.25;filter:grayscale(1)}
+.ticket.used::after{content:"SCANNED";position:absolute;left:50%;top:57%;transform:translate(-50%,-50%) rotate(-14deg);border:4px solid #30d158;color:#1fa645;background:rgba(255,255,255,.75);font-weight:900;letter-spacing:.12em;font-size:1.5rem;padding:4px 16px;border-radius:12px}
+#scan-fx{position:fixed;inset:0;z-index:450;display:none;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+#scan-fx.on{display:block;animation:fadeIn .3s forwards}
+#scan-fx.out{animation:fadeOut .6s forwards}
+@keyframes fadeIn{from{opacity:0}}@keyframes fadeOut{to{opacity:0}}
+#scan-fx .parts{position:absolute;left:50%;top:calc(50% - 30px)}
+#scan-fx .parts i{position:absolute;left:0;top:0}
+.fxl{position:absolute;left:0;right:0;top:calc(50% + 100px);text-align:center;opacity:0;transform:translateY(16px);animation:rise .6s .5s var(--spring) forwards}
+.fxl .lbl{font-size:1.5rem;font-weight:800;letter-spacing:-.02em}.fxl .sub{color:var(--dim);margin-top:4px;font-size:.9rem}
+.stamp{position:absolute;left:50%;top:50%;width:58%;aspect-ratio:1;transform:translate(-50%,-50%);filter:drop-shadow(0 4px 12px rgba(0,0,0,.5))}
+.stamp circle{fill:rgba(0,0,0,.55);stroke-width:4;stroke-dasharray:1;stroke-dashoffset:1;animation:draw .5s .25s var(--ease) forwards}
+.stamp path{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:draw .35s .65s var(--ease) forwards}
+.fly.yes .stamp *{stroke:#30d158}.fly.no .stamp *{stroke:#ff9f0a}
+.fly.yes .xx,.fly.no .ck{display:none}
+@keyframes draw{to{stroke-dashoffset:0}}
 /* Toast */
 #toast{position:fixed;left:50%;bottom:calc(var(--bot) + 30px);z-index:400;transform:translate(-50%,30px);padding:12px 20px;border-radius:99px;font-size:.9rem;font-weight:600;opacity:0;pointer-events:none;transition:.45s var(--spring);white-space:nowrap}
 #toast.on{opacity:1;transform:translate(-50%,0)}
@@ -169,16 +212,25 @@ input::placeholder{color:rgba(235,235,245,.35)}
 </head>
 <body>
 <div class="ambient"><i></i><i></i><i></i></div>
-<div class="hdr-blur"></div>
 
-<header>
-  <div><small>Tus entradas</small><h1>Cine<b>Ticket</b></h1></div>
-  <div class="hdr-actions">
-    <button id="install-btn" class="icon-btn glass" onclick="installApp()" aria-label="Instalar">⤓</button>
-    <button class="icon-btn glass" onclick="openWizard()" aria-label="Nueva entrada">＋</button>
+<header class="top"><div class="hin">
+  <div class="row1">
+    <h1>Cine<b>Ticket</b></h1>
+    <div class="hdr-actions">
+      <button id="install-btn" class="icon-btn glass" onclick="installApp()" aria-label="Instalar">⤓</button>
+      <button class="icon-btn glass" onclick="openWizard()" aria-label="Nueva entrada">＋</button>
+    </div>
   </div>
-</header>
+  <nav class="tabs glass" id="tabs" data-tab="tickets">
+    <i class="ind"></i>
+    <button class="on" data-tab="tickets" onclick="setTab('tickets')"><span>Your Tickets</span><em id="c-tickets">0</em></button>
+    <button data-tab="watched" onclick="setTab('watched')"><span>Watched</span><em id="c-watched">0</em></button>
+  </nav>
+</div></header>
 
+<div class="searchwrap"><label class="search glass"><span class="mag">⌕</span>
+  <input type="search" id="q" placeholder="Buscar película, cine o butaca" autocomplete="off" oninput="render(null,true)">
+  <button id="q-x" onclick="clearQ()" aria-label="Borrar búsqueda" style="display:none">✕</button></label></div>
 <main id="list"></main>
 <div class="empty" id="empty"><div class="ico">🎟️</div><h2>Aún no hay entradas</h2><p>Toca ＋ y escribe el nombre de la película: el póster se agrega solo.</p></div>
 
@@ -197,6 +249,7 @@ input::placeholder{color:rgba(235,235,245,.35)}
         <div class="pill glass wide"><span>Butacas</span><div id="d-seats"></div></div>
       </div>
       <div class="btns">
+        <button class="btn scanbtn" id="scan-btn" onclick="toggleScanned()"><svg viewBox="0 0 24 24"><path id="scan-ico" d="M5 13l4 4L19 7"/></svg><span id="scan-lbl">Scanned</span></button>
         <button class="btn glass" onclick="editTicket()">Editar</button>
         <button class="btn glass danger" onclick="delTicket()">Borrar</button>
       </div>
@@ -244,6 +297,7 @@ input::placeholder{color:rgba(235,235,245,.35)}
 </div>
 
 <div id="qr-full" onclick="closeQR()"><img id="qr-big" alt="QR"><p>TOCA PARA CERRAR</p></div>
+<div id="scan-fx"><div class="parts"></div><div class="fxl"><div class="lbl"></div><div class="sub"></div></div></div>
 <div id="toast" class="glass"></div>
 
 <script>
@@ -257,17 +311,38 @@ const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(tickets));return 
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2200)}
 
 /* ---------- Lista ---------- */
+const LBL={tickets:'Your Tickets',watched:'Watched',scanned:'Scanned',notScanned:'Not Scanned'};
+let tab='tickets',holdCounts=false,moving=false;
+const norm=x=>String(x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const fmtD=ts=>new Date(ts).toLocaleDateString('es',{day:'numeric',month:'short'}).replace('.','');
+const monthLabel=ts=>{if(!ts)return'Sin fecha';const m=new Date(ts).toLocaleDateString('es',{month:'long',year:'numeric'});return m.charAt(0).toUpperCase()+m.slice(1)};
+function updateCounts(){$('c-tickets').textContent=tickets.filter(t=>!t.watched).length;$('c-watched').textContent=tickets.filter(t=>t.watched).length}
+function syncTabs(){$('tabs').dataset.tab=tab;document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab))}
+function setTab(t){if(t===tab)return;tab=t;syncTabs();scrollTo({top:0});render()}
+function clearQ(){$('q').value='';render(null,true);$('q').focus()}
 function render(ghostId,still){
   const l=$('list');l.innerHTML='';
-  $('empty').style.display=tickets.length?'none':'block';
-  tickets.forEach((t,i)=>{
-    const c=document.createElement('div');c.className='card'+(still?' noanim':'')+(t.id===ghostId?' ghost':'');
-    c.style.setProperty('--i',i);c.dataset.id=t.id;
-    c.onclick=()=>openDetail(t.id);
+  const qv=$('q').value.trim(),q=norm(qv);$('q-x').style.display=qv?'':'none';
+  let list=tickets.filter(t=>!!t.watched===(tab==='watched'));
+  if(q)list=list.filter(t=>norm([t.name,t.cine,t.seats,t.hall].join(' ')).includes(q));
+  if(tab==='watched')list.sort((a,b)=>(b.watchedAt||0)-(a.watchedAt||0));
+  const em=$('empty');em.style.display=list.length?'none':'block';
+  if(!list.length){
+    const [i,h,p]=qv?['🔍','Sin resultados',`No hay coincidencias para “${esc(qv)}”.`]:
+      tab==='watched'?['🍿','Aún no hay películas vistas','Abre una entrada y toca “'+LBL.scanned+'” cuando entres a la sala.']:
+      ['🎟️','Aún no hay entradas','Toca ＋ y escribe el nombre de la película: el póster se agrega solo.'];
+    em.innerHTML=`<div class="ico">${i}</div><h2>${h}</h2><p>${p}</p>`;
+  }
+  let n=0,last='';
+  list.forEach(t=>{
+    if(tab==='watched'){const g=monthLabel(t.watchedAt);if(g!==last){last=g;const h=document.createElement('h2');h.className='grp'+(still?' noanim':'');h.style.setProperty('--i',n++);h.textContent=g;l.appendChild(h)}}
+    const c=document.createElement('div');c.className='card'+(still?' noanim':'')+(t.id===ghostId?' ghost':'')+(t.watched?' seen':'');
+    c.style.setProperty('--i',n++);c.dataset.id=t.id;c.onclick=()=>openDetail(t.id);
     c.innerHTML=(t.poster?`<img src="${esc(t.poster)}" alt="" loading="lazy">`:'<div class="noimg">🎬</div>')+
-      `<div class="meta glass"><div><div class="t">${esc(t.name)}</div><div class="s">${esc(t.cine)}</div></div><span class="chip">Sala ${esc(t.hall)}</span></div>`;
+      `<div class="meta glass"><div><div class="t">${esc(t.name)}</div><div class="s">${esc(t.cine)}</div></div><span class="chip">${t.watched?'✓ '+fmtD(t.watchedAt):'Sala '+esc(t.hall)}</span></div>`;
     l.appendChild(c);
   });
+  if(!holdCounts)updateCounts();
 }
 
 /* ---------- Detalle ---------- */
@@ -276,7 +351,9 @@ function openDetail(id){
   $('d-title').textContent=t.name;$('d-cine').textContent=t.cine;$('d-hall').textContent=t.hall;
   $('d-count').textContent=t.count;$('d-seats').textContent=t.seats;
   $('d-img').src=t.poster||'';$('d-bg').style.backgroundImage=t.poster?`url("${t.poster}")`:'none';
-  $('d-qr').src=t.qr||'';$('d-ticket').classList.toggle('none',!t.qr);
+  $('d-qr').src=t.qr||'';$('d-ticket').classList.toggle('none',!t.qr);$('d-ticket').classList.toggle('used',!!t.watched);
+  $('scan-lbl').textContent=t.watched?LBL.notScanned:LBL.scanned;$('scan-btn').classList.toggle('undo',!!t.watched);
+  $('scan-ico').setAttribute('d',t.watched?'M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3':'M5 13l4 4L19 7');
   $('d-hint').textContent=t.qr?'TOCA PARA AMPLIAR':'SIN CÓDIGO QR · EDITA PARA AGREGARLO';
   $('detail').scrollTop=0;$('detail').classList.add('on');document.body.style.overflow='hidden';
 }
@@ -417,6 +494,8 @@ async function save(){
     cine:$('m-cine').value.trim()||'Cine Local',count:$('m-count').value||'1',hall:$('m-hall').value||'-',
     seats:$('m-seats').value.trim()||'-',poster:wiz.poster,qr:wiz.qr};
   const i=tickets.findIndex(x=>x.id===t.id);
+  if(i>=0){t.watched=tickets[i].watched||false;t.watchedAt=tickets[i].watchedAt||0}
+  tab=t.watched?'watched':'tickets';syncTabs();$('q').value='';
   if(i>=0)tickets[i]=t;else tickets.push(t);
   if(!persist())return;
   saving=true;
@@ -443,6 +522,48 @@ async function save(){
     requestAnimationFrame(()=>f.remove());
   }catch{card.classList.remove('ghost')}
   saving=false;toast('Entrada guardada ✓');
+}
+
+/* ---------- Scanned / Not Scanned ---------- */
+function burst(c,yes){
+  c.innerHTML='';const cols=yes?['#30d158','#ffd60a','#fff','#64d2ff','#ff9f0a']:['#ff9f0a','#ff453a','#fff'];
+  for(let i=0;i<(yes?24:10);i++){
+    const p=document.createElement('i'),a=Math.random()*6.283,r=110+Math.random()*100,z=5+Math.random()*6;
+    p.style.cssText=`width:${z}px;height:${z}px;background:${cols[i%cols.length]};border-radius:${Math.random()>.5?'50%':'2px'}`;c.appendChild(p);
+    p.animate([{transform:'translate(0,0) scale(.3)',opacity:1},{transform:`translate(${Math.cos(a)*r}px,${Math.sin(a)*r}px) rotate(${Math.random()*540}deg) scale(1)`,opacity:0}],
+      {duration:900+Math.random()*300,delay:420,easing:'cubic-bezier(.15,.7,.3,1)',fill:'both'});
+  }
+}
+async function toggleScanned(){
+  if(moving)return;const t=tickets.find(x=>x.id===curId);if(!t)return;
+  moving=true;const to=!t.watched;
+  t.watched=to;t.watchedAt=to?Date.now():0;
+  if(!persist()){t.watched=!to;t.watchedAt=0;moving=false;return}
+  const msg=to?'Movie moved to '+LBL.watched:'Movie back in '+LBL.tickets;
+  holdCounts=true;
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){closeDetail();render(null,true);holdCounts=false;updateCounts();toast(msg);moving=false;return}
+  const fx=$('scan-fx');fx.className='on';
+  fx.querySelector('.lbl').textContent=to?LBL.scanned+' ✓':LBL.notScanned;
+  fx.querySelector('.sub').textContent=to?'Moving to '+LBL.watched+'…':'Moving back to '+LBL.tickets+'…';
+  burst(fx.querySelector('.parts'),to);
+  // póster con sello en el centro
+  const f=document.createElement('div');f.className='fly '+(to?'yes':'no');
+  f.innerHTML=(t.poster?`<img src="${esc(t.poster)}" alt="">`:'<div class="noimg" style="z-index:0">🎬</div>')+
+    '<svg class="stamp" viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" pathLength="1"/><path class="ck" d="M19 33l9 9 17-19" pathLength="1"/><path class="xx" d="M22 22l20 20M42 22L22 42" pathLength="1"/></svg>';
+  const W=120,H=180,X=(innerWidth-W)/2,Y=(innerHeight-H)/2-30;
+  Object.assign(f.style,{left:X+'px',top:Y+'px',width:W+'px',height:H+'px',borderRadius:'18px'});document.body.appendChild(f);
+  await f.animate([{transform:'scale(.5)',opacity:0},{transform:'scale(1.08)',opacity:1,offset:.7},{transform:'scale(1)',opacity:1}],{duration:460,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'}).finished;
+  await sleep(1000);
+  // vuelo hacia la pestaña de destino
+  const tb=document.querySelector(`.tabs button[data-tab="${to?'watched':'tickets'}"]`);
+  fx.classList.add('out');closeDetail();render(null,true);
+  const r=tb.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  await f.animate([{left:X+'px',top:Y+'px',width:W+'px',height:H+'px',borderRadius:'18px',opacity:1},
+                   {left:cx-13+'px',top:cy-19+'px',width:'26px',height:'38px',borderRadius:'6px',opacity:.85}],
+    {duration:720,easing:'cubic-bezier(.6,0,.25,1)',fill:'forwards'}).finished;
+  f.remove();fx.className='';holdCounts=false;updateCounts();
+  tb.classList.remove('bump');void tb.offsetWidth;tb.classList.add('bump');setTimeout(()=>tb.classList.remove('bump'),700);
+  toast(msg);moving=false;
 }
 
 /* ---------- PWA ---------- */
